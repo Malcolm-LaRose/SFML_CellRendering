@@ -3,6 +3,7 @@
 // Goals for AFTER completion --> don't touch until multiple states works first, do roughly in order
 //
 // Clean up/ refactor code to make more modular/extendable
+// --> Try to separate GOL code from rendering code as much as possible
 // Change state to represent colors somehow --> USE CHAR, 0 is off, 1 is on, 2 can be unique, etc....
 // more optimization...
 
@@ -23,7 +24,7 @@
 GoL_Settings& gols = GoL_Settings::getSettings();
 
 
-enum CellTypes {
+enum CellType {
 	OFF,
 	ON,
 	AIR,
@@ -31,6 +32,8 @@ enum CellTypes {
 	SAND,
 	STONE
 };
+
+const CellType& getRandCellType() {}
 
 
 const sf::Color cellStateToColor(const bool& st) {
@@ -41,28 +44,28 @@ const sf::Color cellStateToColor(const bool& st) {
 
 class Cell {
 public:
-	Cell() : state(0) {}
+	Cell() : state(OFF) {}
 
-	void updateCellState(const char& st) {
+	void updateCellState(const CellType& st) {
 		state = st;
 	}
 	 
 	void flipCellState() { //  On / Off
-		if (state == 0) {
-		state = 1; 
+		if (state == OFF) {
+		state = ON; 
 		return;
 		}
-		else if (state == 1) state = 0;
+		else if (state == ON) state = OFF;
 		return;
 	}
 
-	const char& getCellState() const {
+	const CellType& getCellState() const {
 		return state;
 	}
 
 
 private:
-	char state; // CHANGE TO A CHAR, DETERMINE PROPERTIRES AS I GO
+	CellType state; // CHANGE TO A CHAR, DETERMINE PROPERTIRES AS I GO
 
 };
 
@@ -77,12 +80,12 @@ public:
 		return grid;
 	}
 
-	const bool& getCellStateAt(const int& row, const int& col) const {
+	const CellType& getCellStateAt(const int& row, const int& col) const {
 		const Cell& cell = grid[row][col];
 		return cell.getCellState();
 	}
 
-	void updateCellStateAt(const int& row, const int& col, const bool& st) {
+	void updateCellStateAt(const int& row, const int& col, const CellType& st) {
 		grid[row][col].updateCellState(st);
 	}
 
@@ -96,7 +99,7 @@ public:
 	void resetGrid() {
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
-				updateCellStateAt(row, col, false);
+				updateCellStateAt(row, col, OFF);
 				iterNum = 0;
 			}
 		}
@@ -106,7 +109,7 @@ public:
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
 				const bool& randBool = genRandomBool(0.5f);
-				updateCellStateAt(row, col, randBool);
+				updateCellStateAt(row, col, OFF); // PLACEHOLDER, NEEDS FIXING!
 				iterNum = 0;
 			}
 		}
@@ -143,16 +146,16 @@ public:
 				// Actual GoL
 				if (currentCellState) {
 					if (numAlive < 2 || numAlive > 3) {
-						updatedGrid.updateCellStateAt(row, col, false);
+						updatedGrid.updateCellStateAt(row, col, OFF);
 						if (!gridChanged) gridChanged = true;
 					}
 					else {
-						updatedGrid.updateCellStateAt(row, col, true);
+						updatedGrid.updateCellStateAt(row, col, ON);
 					}
 				}
 				else {
 					if (numAlive == 3) {
-						updatedGrid.updateCellStateAt(row, col, true);
+						updatedGrid.updateCellStateAt(row, col, ON);
 						if (!gridChanged) gridChanged = true;
 					}
 				}
@@ -163,7 +166,7 @@ public:
 
 		for (int row = 0; row < gols.rows; ++row) {
 			for (int col = 0; col < gols.cols; ++col) {
-				bool nextState = updatedGrid.getCellStateAt(row, col);
+				const CellType& nextState = updatedGrid.getCellStateAt(row, col);
 				grid.updateCellStateAt(row, col, nextState);
 			}
 		}
