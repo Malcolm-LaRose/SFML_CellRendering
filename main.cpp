@@ -4,7 +4,8 @@
 //
 // Clean up/ refactor code to make more modular/extendable
 // --> Try to separate GOL code from rendering code as much as possible
-// Change type to represent colors somehow --> USE CHAR, 0 is off, 1 is on, 2 can be unique, etc....
+// --> Separate bresenham algorithm from cell flipping so I can resuse it more easily (line and circle previews...)
+// Add error checking
 // more optimization...
 
 
@@ -26,7 +27,7 @@ GoL_Settings& gols = GoL_Settings::getSettings();
 
 enum CellType {
 	OFF,
-	ON,
+	ON, // Essentially 'error' type for any higher cell types
 	AIR,
 	WATER,
 	SAND,
@@ -115,7 +116,7 @@ public:
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
 				const CellType& randCellType = getRandCellType();
-				// updateCellTypeAt(row, col, randCellType);
+				updateCellTypeAt(row, col, randCellType);
 				iterNum = 0;
 			}
 		}
@@ -417,10 +418,10 @@ private:
 					}
 				}
 				if (event.key.code == sf::Keyboard::R) {
-					game.grid.resetGrid(); // This is why we wanted grid to be public (private seems overused!)
+					grid.resetGrid(); // This is why we wanted grid to be public (private seems overused!)
 				}
 				if (event.key.code == sf::Keyboard::Z) {
-					game.grid.randomizeGrid();
+					grid.randomizeGrid();
 				}
 				break;
 			}
@@ -521,9 +522,9 @@ private:
 					const int& x = col * (gols.cellDist) + gols.borderSize;
 					const int& y = row * (gols.cellDist) + gols.borderSize;
 
-					const bool& cellType = grid.getCellTypeAt(row, col);
+					const CellType& cellType = grid.getCellTypeAt(row, col);
 
-					sf::Color color = cellType ? Color::PHSORNG : Color::DRKGRY;
+					const sf::Color& color = cellTypeToColor(cellType);
 
 					cells[i].position = sf::Vector2f(x, y);
 					cells[i].color = color;
