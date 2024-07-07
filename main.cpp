@@ -41,23 +41,28 @@ const sf::Color cellStateToColor(const bool& st) {
 
 class Cell {
 public:
-	Cell() : state(false) {}
+	Cell() : state(0) {}
 
-	void updateCellState(const bool& st) {
+	void updateCellState(const char& st) {
 		state = st;
 	}
-
-	void flipCellState() {
-		state = !state;
+	 
+	void flipCellState() { //  On / Off
+		if (state == 0) {
+		state = 1; 
+		return;
+		}
+		else if (state == 1) state = 0;
+		return;
 	}
 
-	const bool& getCellState() const {
+	const char& getCellState() const {
 		return state;
 	}
 
 
 private:
-	bool state; // CHANGE TO A CHAR, DETERMINE PROPERTIRES AS I GO
+	char state; // CHANGE TO A CHAR, DETERMINE PROPERTIRES AS I GO
 
 };
 
