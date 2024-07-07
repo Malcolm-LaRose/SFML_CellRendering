@@ -141,10 +141,10 @@ public:
 			for (int col = 0; col < gols.cols; col++) {
 				int numAlive = checkMooreNeighborhoodFor(row, col, true);
 
-				const bool& currentCellState = grid.getCellStateAt(row, col);
+				const CellType& currentCellState = grid.getCellStateAt(row, col);
 
 				// Actual GoL
-				if (currentCellState) {
+				if (currentCellState == ON) {
 					if (numAlive < 2 || numAlive > 3) {
 						updatedGrid.updateCellStateAt(row, col, OFF);
 						if (!gridChanged) gridChanged = true;
@@ -153,7 +153,7 @@ public:
 						updatedGrid.updateCellStateAt(row, col, ON);
 					}
 				}
-				else {
+				else if (currentCellState == OFF) {
 					if (numAlive == 3) {
 						updatedGrid.updateCellStateAt(row, col, ON);
 						if (!gridChanged) gridChanged = true;
@@ -164,10 +164,12 @@ public:
 			}
 		}
 
-		for (int row = 0; row < gols.rows; ++row) {
-			for (int col = 0; col < gols.cols; ++col) {
-				const CellType& nextState = updatedGrid.getCellStateAt(row, col);
-				grid.updateCellStateAt(row, col, nextState);
+		if (gridChanged) {
+			for (int row = 0; row < gols.rows; ++row) {
+				for (int col = 0; col < gols.cols; ++col) {
+					const CellType& nextState = updatedGrid.getCellStateAt(row, col);
+					grid.updateCellStateAt(row, col, nextState);
+				}
 			}
 		}
 		grid.incIterNum();
@@ -178,7 +180,7 @@ public:
 
 private:
 
-	const bool isInBounds(const int& row, const int& col) {
+	const bool isInBounds(const int& row, const int& col) const {
 		if (row < 0 || col < 0) {
 			return false;
 		}
@@ -377,7 +379,7 @@ private:
 					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
-					plotCircle(firstPos, secondPos);
+					plotCircle(secondPos, firstPos);
 				}
 				break;
 			}
