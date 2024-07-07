@@ -1,10 +1,10 @@
 // Sandy Rendering
 // 
-// Goals for AFTER completion --> don't touch until multiple states works first, do roughly in order
+// Goals for AFTER completion --> don't touch until multiple types works first, do roughly in order
 //
 // Clean up/ refactor code to make more modular/extendable
 // --> Try to separate GOL code from rendering code as much as possible
-// Change state to represent colors somehow --> USE CHAR, 0 is off, 1 is on, 2 can be unique, etc....
+// Change type to represent colors somehow --> USE CHAR, 0 is off, 1 is on, 2 can be unique, etc....
 // more optimization...
 
 
@@ -30,42 +30,48 @@ enum CellType {
 	AIR,
 	WATER,
 	SAND,
-	STONE
+	STONE,
+
+
+	_CELLTYPES // Special member to count the number of cell types
 };
 
-const CellType& getRandCellType() {}
+const CellType& getRandCellType() {
+	const int randInt = genRandomInt(0, _CELLTYPES - 1);
+	return static_cast<CellType>(randInt);
+}
 
 
-const sf::Color cellStateToColor(const bool& st) {
-	if (st) return Color::PHSORNG;
-	else if (!st) return Color::DRKGRY;
+const sf::Color cellTypeToColor(const CellType& ty) {
+	if (ty == ON) return Color::PHSORNG;
+	else if (!ty == OFF) return Color::DRKGRY;
 }
 
 
 class Cell {
 public:
-	Cell() : state(OFF) {}
+	Cell() : type(OFF) {}
 
-	void updateCellState(const CellType& st) {
-		state = st;
+	void updateCellType(const CellType& ty) {
+		type = ty;
 	}
 	 
-	void flipCellState() { //  On / Off
-		if (state == OFF) {
-		state = ON; 
+	void flipCellType() { //  On / Off
+		if (type == OFF) {
+			type = ON;
 		return;
 		}
-		else if (state == ON) state = OFF;
+		else if (type == ON) type = OFF;
 		return;
 	}
 
-	const CellType& getCellState() const {
-		return state;
+	const CellType& getCellType() const {
+		return type;
 	}
 
 
 private:
-	CellType state; // CHANGE TO A CHAR, DETERMINE PROPERTIRES AS I GO
+	CellType type; 
 
 };
 
@@ -80,26 +86,26 @@ public:
 		return grid;
 	}
 
-	const CellType& getCellStateAt(const int& row, const int& col) const {
+	const CellType& getCellTypeAt(const int& row, const int& col) const {
 		const Cell& cell = grid[row][col];
-		return cell.getCellState();
+		return cell.getCellType();
 	}
 
-	void updateCellStateAt(const int& row, const int& col, const CellType& st) {
-		grid[row][col].updateCellState(st);
+	void updateCellTypeAt(const int& row, const int& col, const CellType& ty) {
+		grid[row][col].updateCellType(ty);
 	}
 
-	void flipCellStateAt(const int& row, const int& col) {
+	void flipCellTypeAt(const int& row, const int& col) {
 
 		if (row < 0 || row >= gols.rows || col < 0 || col >= gols.cols) return;
 
-		grid[row][col].flipCellState();
+		grid[row][col].flipCellType();
 	}
 
 	void resetGrid() {
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
-				updateCellStateAt(row, col, OFF);
+				updateCellTypeAt(row, col, OFF);
 				iterNum = 0;
 			}
 		}
@@ -108,8 +114,8 @@ public:
 	void randomizeGrid() {
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
-				const bool& randBool = genRandomBool(0.5f);
-				updateCellStateAt(row, col, OFF); // PLACEHOLDER, NEEDS FIXING!
+				const CellType& randCellType = getRandCellType();
+				updateCellTypeAt(row, col, randCellType);
 				iterNum = 0;
 			}
 		}
@@ -124,7 +130,7 @@ private:
 
 	std::vector<std::vector<Cell>> grid;
 
-	int iterNum = 0;
+	uint32_t iterNum = 0;
 
 
 };
@@ -141,21 +147,21 @@ public:
 			for (int col = 0; col < gols.cols; col++) {
 				int numAlive = checkMooreNeighborhoodFor(row, col, true);
 
-				const CellType& currentCellState = grid.getCellStateAt(row, col);
+				const CellType& currentCellType = grid.getCellTypeAt(row, col);
 
 				// Actual GoL
-				if (currentCellState == ON) {
+				if (currentCellType == ON) {
 					if (numAlive < 2 || numAlive > 3) {
-						updatedGrid.updateCellStateAt(row, col, OFF);
+						updatedGrid.updateCellTypeAt(row, col, OFF);
 						if (!gridChanged) gridChanged = true;
 					}
 					else {
-						updatedGrid.updateCellStateAt(row, col, ON);
+						updatedGrid.updateCellTypeAt(row, col, ON);
 					}
 				}
-				else if (currentCellState == OFF) {
+				else if (currentCellType == OFF) {
 					if (numAlive == 3) {
-						updatedGrid.updateCellStateAt(row, col, ON);
+						updatedGrid.updateCellTypeAt(row, col, ON);
 						if (!gridChanged) gridChanged = true;
 					}
 				}
@@ -167,8 +173,8 @@ public:
 		if (gridChanged) {
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
-					const CellType& nextState = updatedGrid.getCellStateAt(row, col);
-					grid.updateCellStateAt(row, col, nextState);
+					const CellType& nextType = updatedGrid.getCellTypeAt(row, col);
+					grid.updateCellTypeAt(row, col, nextType);
 				}
 			}
 		}
@@ -193,7 +199,7 @@ private:
 		}
 	}
 
-	const int& checkMooreNeighborhoodFor(const int& row, const int& col, bool st) {
+	const int& checkMooreNeighborhoodFor(const int& row, const int& col, bool ty) {
 		int count = 0;
 		for (int i = -1; i <= 1; ++i) {
 			for (int j = -1; j <= 1; ++j) {
@@ -201,7 +207,7 @@ private:
 				if (!isInBounds(row + i, col + j)) {
 					continue;
 				}
-				if ((grid.getCellStateAt(row + i, col + j) == st)) {
+				if ((grid.getCellTypeAt(row + i, col + j) == ty)) {
 					count++;
 				}
 			}
@@ -434,7 +440,7 @@ private:
 		int i = 0;
 
 		if (pos1 == pos2) {
-			grid.flipCellStateAt(pos1.x, pos1.y);
+			grid.flipCellTypeAt(pos1.x, pos1.y);
 			return;
 		}
 
@@ -452,7 +458,7 @@ private:
 		i = 0;
 
 		while (i <= step) {
-			grid.flipCellStateAt(x, y);
+			grid.flipCellTypeAt(x, y);
 			x += dx;
 			y += dy;
 			i++;
@@ -468,7 +474,7 @@ private:
 		int err = dx + dy, e2; /* error value e_xy */
 
 		while (true) {  /* loop */
-			grid.flipCellStateAt(x0, y0);
+			grid.flipCellTypeAt(x0, y0);
 			if (x0 == x1 && y0 == y1) break;
 			e2 = 2 * err;
 			if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
@@ -487,10 +493,10 @@ private:
 
 		int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
 		do {
-			grid.flipCellStateAt(xm - x, ym + y); /*   I. Quadrant */
-			grid.flipCellStateAt(xm - y, ym - x); /*  II. Quadrant */
-			grid.flipCellStateAt(xm + x, ym - y); /* III. Quadrant */
-			grid.flipCellStateAt(xm + y, ym + x); /*  IV. Quadrant */
+			grid.flipCellTypeAt(xm - x, ym + y); /*   I. Quadrant */
+			grid.flipCellTypeAt(xm - y, ym - x); /*  II. Quadrant */
+			grid.flipCellTypeAt(xm + x, ym - y); /* III. Quadrant */
+			grid.flipCellTypeAt(xm + y, ym + x); /*  IV. Quadrant */
 			r = err;
 			if (r <= y) err += ++y * 2 + 1;           /* e_xy+e_y < 0 */
 			if (r > x || err > y) err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
@@ -515,9 +521,9 @@ private:
 					const int& x = col * (gols.cellDist) + gols.borderSize;
 					const int& y = row * (gols.cellDist) + gols.borderSize;
 
-					const bool& cellState = grid.getCellStateAt(row, col);
+					const bool& cellType = grid.getCellTypeAt(row, col);
 
-					sf::Color color = cellState ? Color::PHSORNG : Color::DRKGRY;
+					sf::Color color = cellType ? Color::PHSORNG : Color::DRKGRY;
 
 					cells[i].position = sf::Vector2f(x, y);
 					cells[i].color = color;
@@ -535,10 +541,10 @@ private:
 
 					const sf::Vector2i& pos = sf::Mouse::getPosition(window);
 
-					const bool& cellState = grid.getCellStateAt(row, col);
+					const CellType& cellType = grid.getCellTypeAt(row, col);
 
 
-					sf::Color color = cellStateToColor(cellState);
+					sf::Color color = cellTypeToColor(cellType);
 
 
 					// First triangle (top-left, top-right, bottom-right)
@@ -563,7 +569,7 @@ private:
 		}
 	}
 
-	void vertexRenderGrid() {
+	void vertexRenderGrid() { // Maybe separate color flipping from rendering...
 
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 		const int& mouseCol = mousePos.x / gols.cellDist;
@@ -575,9 +581,9 @@ private:
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
 
-					const bool& cellState = grid.getCellStateAt(row, col);
+					const CellType& cellType = grid.getCellTypeAt(row, col);
 
-					sf::Color color = cellStateToColor(cellState);
+					sf::Color color = cellTypeToColor(cellType);
 
 					if ((row == mouseRow) && (col == mouseCol)) {
 						color = Color::CYAN;
@@ -597,9 +603,9 @@ private:
 				for (int col = 0; col < gols.cols; ++col) {
 
 
-					const bool& cellState = grid.getCellStateAt(row, col);
+					const CellType& cellType = grid.getCellTypeAt(row, col);
 
-					sf::Color color = cellStateToColor(cellState);
+					sf::Color color = cellTypeToColor(cellType);
 
 					if ((row == mouseRow) && (col == mouseCol)) {
 						color = Color::CYAN;
