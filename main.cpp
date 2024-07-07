@@ -44,7 +44,7 @@ const CellType& getRandCellType() {
 
 const sf::Color cellTypeToColor(const CellType& ty) {
 	if (ty == ON) return Color::PHSORNG;
-	else if (!ty == OFF) return Color::DRKGRY;
+	else if (ty == OFF) return Color::DRKGRY;
 }
 
 
@@ -115,7 +115,7 @@ public:
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
 				const CellType& randCellType = getRandCellType();
-				updateCellTypeAt(row, col, randCellType);
+				// updateCellTypeAt(row, col, randCellType);
 				iterNum = 0;
 			}
 		}
@@ -145,7 +145,7 @@ public:
 
 		for (int row = 0; row < gols.rows; row++) { // Make sure not to check edges
 			for (int col = 0; col < gols.cols; col++) {
-				int numAlive = checkMooreNeighborhoodFor(row, col, true);
+				int numAlive = checkMooreNeighborhoodFor(row, col, ON);
 
 				const CellType& currentCellType = grid.getCellTypeAt(row, col);
 
@@ -199,7 +199,7 @@ private:
 		}
 	}
 
-	const int& checkMooreNeighborhoodFor(const int& row, const int& col, bool ty) {
+	const int& checkMooreNeighborhoodFor(const int& row, const int& col, const CellType& ty) {
 		int count = 0;
 		for (int i = -1; i <= 1; ++i) {
 			for (int j = -1; j <= 1; ++j) {
