@@ -411,7 +411,6 @@ private:
 				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 				const int& col = mousePos.x / gols.cellDist;
 				const int& row = mousePos.y / gols.cellDist;
-				secondPos = sf::Vector2i(row, col);
 
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					// DDATool(secondPos, firstPos);
@@ -451,6 +450,8 @@ private:
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 		const int mouseCol = mousePos.x / gols.cellDist;
 		const int mouseRow = mousePos.y / gols.cellDist;
+
+		secondPos = sf::Vector2i(mouseRow, mouseCol);
 
 		// Clear all highlighted cells except the current one under the mouse
 		grid.clearHighlightedCells();
