@@ -129,13 +129,29 @@ public:
 	}
 
 	void addHighlightedCell(const sf::Vector2i& cell) {
-		if (!isCellHighlighted(cell)) {
+		// Check if the cell is already highlighted
+		bool alreadyHighlighted = false;
+		for (const auto& highlightedCell : highlightedCells) {
+			if (highlightedCell.x == cell.x && highlightedCell.y == cell.y) {
+				alreadyHighlighted = true;
+				break;
+			}
+		}
+
+		// If not already highlighted, add it
+		if (!alreadyHighlighted) {
 			highlightedCells.push_back(cell);
 		}
+	
 	}
 
-	bool isCellHighlighted(const sf::Vector2i& cell) const {
-		return std::find(highlightedCells.begin(), highlightedCells.end(), cell) != highlightedCells.end();
+	const bool isCellHighlighted(const sf::Vector2i& cell) const {
+		for (const auto& highlightedCell : highlightedCells) {
+			if (highlightedCell.x == cell.x && highlightedCell.y == cell.y) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void clearHighlightedCells() {
@@ -401,6 +417,7 @@ private:
 				const int& row = mousePos.y / gols.cellDist;
 
 				if (event.mouseButton.button == sf::Mouse::Left) {
+					grid.clearHighlightedCells();
 					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
@@ -443,15 +460,17 @@ private:
 		const int mouseCol = mousePos.x / gols.cellDist;
 		const int mouseRow = mousePos.y / gols.cellDist;
 
-		secondPos = sf::Vector2i(mouseRow, mouseCol);
 
-		// Clear all highlighted cells except the current one under the mouse
-		grid.clearHighlightedCells();
-		grid.addHighlightedCell(sf::Vector2i(mouseRow, mouseCol));
+		if (sf::Vector2i(mouseRow, mouseCol) != secondPos) {
+			secondPos = sf::Vector2i(mouseRow, mouseCol);
+
+			grid.clearHighlightedCells();
+			grid.addHighlightedCell(secondPos);
+		}
+
+
+
 	}
-
-
-
 
 
 	void bresenhamTool(int x0, int y0, int x1, int y1) { // Draw a line between point a and point b 
