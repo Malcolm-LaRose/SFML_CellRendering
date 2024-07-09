@@ -2,9 +2,9 @@
 // 
 // Goals for AFTER completion --> don't touch until multiple types works first, do roughly in order
 //
-// Clean up/ refactor code to make more modular/extendable
+// Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
 // --> Try to separate GOL code from rendering code as much as possible
-// --> Separate bresenham algorithm from cell flipping so I can resuse it more easily (line and circle previews...)
+// --> Separate bresenham algorithm from cell flipping so I can resuse it more easily (line and circle previews...) --> Do line and circle preview functions
 // Add error checking
 // more optimization...
 
@@ -83,7 +83,7 @@ class Grid {
 public:
 
 	Grid() {
-		grid.resize(gols.rows, std::vector<Cell>(gols.cols));
+		grid.resize(gols.rows, std::vector<Cell>(gols.cols)); 
 	}
 
 	const std::vector<std::vector<Cell>>& getGrid() const {
@@ -132,7 +132,7 @@ public:
 
 private:
 
-	std::vector<std::vector<Cell>> grid;
+	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON
 
 	uint32_t iterNum = 0;
 
@@ -203,7 +203,7 @@ private:
 		}
 	}
 
-	const int& checkMooreNeighborhoodFor(const int& row, const int& col, const CellType& ty) {
+	const int& checkMooreNeighborhoodFor(const int& row, const int& col, const CellType& ty) const {
 		int count = 0;
 		for (int i = -1; i <= 1; ++i) {
 			for (int j = -1; j <= 1; ++j) {
@@ -290,7 +290,7 @@ public:
 
 
 	void frameCounterDisplay(const int& frameTime, const int& avg) {
-		frameText.setString("F Time (us): " + itostr(frameTime) + "\nAvg FPS: " + itostr(avg));
+		frameText.setString("F Time (us): " + itostr(frameTime) + "\nAvg FPS: " + itostr(avg)); // Maybe do with c style strings?
 
 		window.draw(frameText);
 	}
@@ -374,8 +374,8 @@ private:
 				const int& row = mousePos.y / gols.cellDist;
 				firstPos = sf::Vector2i(row, col);
 
-				if (event.mouseButton.button == sf::Mouse::Left) {
-				}
+				// Line preview tool maybe goes here? How to turn off line preview when mouse released...
+
 				break;
 			}
 			case sf::Event::MouseButtonReleased: {
@@ -418,53 +418,12 @@ private:
 		}
 	}
 
-	void DDATool(const sf::Vector2i& pos1, const sf::Vector2i& pos2) { // Digital differential analyzer
-		float x1, x2, y1, y2;
-		x1 = pos1.x;
-		y1 = pos1.y;
-		x2 = pos2.x;
-		y2 = pos2.y;
-		float dx = x2 - x1;
-		float dy = y2 - y1;
-		float step = 0.0f;
-		float x, y;
-		int i = 0;
-
-		if (pos1 == pos2) {
-			grid.flipCellTypeAt(pos1.x, pos1.y);
-			return;
-		}
-
-		if (std::abs(dx) >= std::abs(dy)) {
-			step = std::abs(dx);
-		}
-		else {
-			step = std::abs(dy);
-		}
-
-		dx = dx / step;
-		dy = dy / step;
-		x = x1;
-		y = y1;
-		i = 0;
-
-		while (i <= step) {
-			grid.flipCellTypeAt(x, y);
-			x += dx;
-			y += dy;
-			i++;
-		}
-
-
-	}
-
-	void bresenhamTool(int x0, int y0, int x1, int y1) // Draw a line between point a and point b
-	{
+	void bresenhamTool(int x0, int y0, int x1, int y1) { // Draw a line between point a and point b 
 		int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
 		int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
 		int err = dx + dy, e2; /* error value e_xy */
 
-		while (true) {  /* loop */
+		while (true) { 
 			grid.flipCellTypeAt(x0, y0);
 			if (x0 == x1 && y0 == y1) break;
 			e2 = 2 * err;
@@ -483,8 +442,7 @@ private:
 
 	}
 
-	void plotCircle(const sf::Vector2i& pos1, const sf::Vector2i& pos2)
-	{
+	void plotCircle(const sf::Vector2i& pos1, const sf::Vector2i& pos2) {
 		int xm, ym;
 
 		xm = pos2.x;
