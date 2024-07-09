@@ -27,12 +27,10 @@ GoL_Settings& gols = GoL_Settings::getSettings();
 
 
 
-struct CellType { // Binds type to color, can extend later to more things
+struct CellType { // Binds type to color, can extend later to more things like behaviour
 	enum Type {
 		OFF,
 		ON, // Essentially 'error' type for any higher cell types
-
-
 
 		_CELLTYPES // Special member to count the number of cell types
 	} type;
@@ -88,7 +86,7 @@ public:
 		grid.resize(gols.rows, std::vector<Cell>(gols.cols));
 	}
 
-	const std::vector<std::vector<Cell>> getGrid() const {
+	const std::vector<std::vector<Cell>>& getGrid() const {
 		return grid;
 	}
 
@@ -349,6 +347,7 @@ private:
 	bool paused = true; // Start paused
 	float timer = 0; // For simtime calcs
 
+	sf::Mouse mouse; // Could this be used?
 	sf::Vector2i firstPos;
 	sf::Vector2i secondPos;
 
@@ -395,19 +394,6 @@ private:
 				break;
 			}
 			case sf::Event::MouseMoved: {
-				// Draw temporary shapes until mouse is released
-				//sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-				//const int& col = mousePos.x / gols.cellDist;
-				//const int& row = mousePos.y / gols.cellDist;
-				//secondPos = sf::Vector2i(row, col);
-
-				//if (event.mouseButton.button == sf::Mouse::Left) {
-				//	// DDATool(secondPos, firstPos);
-				//	bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
-				//}
-				//else if (event.mouseButton.button == sf::Mouse::Right) {
-				//	plotCircle(firstPos, secondPos);
-				//}
 
 				break;
 			}
