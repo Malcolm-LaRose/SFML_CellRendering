@@ -129,10 +129,20 @@ public:
 		++iterNum;
 	}
 
+	void setHighlightedCell(const sf::Vector2i& cell) {
+		highlightedCell = cell;
+	}
+
+	const sf::Vector2i& getHighlightedCell() const {
+		return highlightedCell;
+	}
+
 
 private:
 
 	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON
+
+	sf::Vector2i highlightedCell;
 
 	uint32_t iterNum = 0;
 
@@ -375,6 +385,10 @@ private:
 				firstPos = sf::Vector2i(row, col);
 
 				// Line preview tool maybe goes here? How to turn off line preview when mouse released...
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					// DDATool(secondPos, firstPos);
+					bresenhamHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
+				}
 
 				break;
 			}
@@ -394,7 +408,7 @@ private:
 				break;
 			}
 			case sf::Event::MouseMoved: {
-
+				handleMouseHover();
 				break;
 			}
 			case sf::Event::KeyPressed:
@@ -418,6 +432,18 @@ private:
 		}
 	}
 
+	void handleMouseHover() {
+		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+		const int mouseCol = mousePos.x / gols.cellDist;
+		const int mouseRow = mousePos.y / gols.cellDist;
+
+		grid.setHighlightedCell(sf::Vector2i(mouseRow, mouseCol));
+	}
+
+
+
+
+
 	void bresenhamTool(int x0, int y0, int x1, int y1) { // Draw a line between point a and point b 
 		int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
 		int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -425,6 +451,20 @@ private:
 
 		while (true) { 
 			grid.flipCellTypeAt(x0, y0);
+			if (x0 == x1 && y0 == y1) break;
+			e2 = 2 * err;
+			if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
+			if (e2 <= dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
+		}
+	}
+
+	void bresenhamHighlighter(int x0, int y0, int x1, int y1) {
+		int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+		int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+		int err = dx + dy, e2; /* error value e_xy */
+
+		while (true) {
+			grid.setHighlightedCell(sf::Vector2i(x0, y0));
 			if (x0 == x1 && y0 == y1) break;
 			e2 = 2 * err;
 			if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
@@ -523,7 +563,7 @@ private:
 		}
 	}
 
-	void vertexRenderGrid() { // Maybe separate color flipping from rendering...
+	void vertexRenderGrid() { // Have to separate color flipping from rendering...
 
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 		const int& mouseCol = mousePos.x / gols.cellDist;
@@ -537,8 +577,8 @@ private:
 
 					sf::Color color = grid.getCellTypeAt(row, col).color();
 
-					if ((row == mouseRow) && (col == mouseCol)) {
-						color = Color::CYAN;
+					if (row == grid.getHighlightedCell().x && col == grid.getHighlightedCell().y) {
+						color = Color::CYAN; // Highlight color
 					}
 
 
@@ -546,6 +586,8 @@ private:
 					++i;
 				}
 			}
+
+
 
 			window.draw(cells);
 		}
@@ -556,8 +598,8 @@ private:
 
 					sf::Color color = grid.getCellTypeAt(row, col).color();
 
-					if ((row == mouseRow) && (col == mouseCol)) {
-						color = Color::CYAN;
+					if (row == grid.getHighlightedCell().x && col == grid.getHighlightedCell().y) {
+						color = Color::CYAN; // Highlight color
 					}
 
 					// Set the color of the vertices
