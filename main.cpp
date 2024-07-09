@@ -1,7 +1,9 @@
 // Sandy Rendering
 // 
-// Goals for AFTER completion --> don't touch until multiple types works first, do roughly in order
-//
+// GOALS
+// 
+// Fix rendering bottleneck 
+// --> Maybe make the cells vertex array a vertex buffer
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
 // Do line and circle preview functions
 // Add error checking/ reporting
@@ -373,7 +375,7 @@ private:
 	sf::Text frameText;
 
 	sf::VertexBuffer borderAndBGRect;
-	sf::VertexArray cells;
+	sf::VertexArray cells; // Maybe make me a buffer?
 
 	GameOfLife game;
 	Grid& grid = game.grid;
@@ -461,7 +463,7 @@ private:
 		const int mouseRow = mousePos.y / gols.cellDist;
 
 
-		if (sf::Vector2i(mouseRow, mouseCol) != secondPos) {
+		if (sf::Vector2i(mouseRow, mouseCol) != secondPos) { // Skips clearing and adding if mouse hasn't moved to a new cell
 			secondPos = sf::Vector2i(mouseRow, mouseCol);
 
 			grid.clearHighlightedCells();
@@ -533,7 +535,7 @@ private:
 		window.draw(borderAndBGRect);
 	}
 
-	void calcVertices() {
+	void calcVertices() { // Used once to place all of the vertices
 		if (gols.cellDist == 1) {
 
 			int i = 0;
@@ -585,7 +587,7 @@ private:
 		}
 	}
 
-	void vertexRenderGrid() { // Have to separate color flipping from rendering...
+	void vertexRenderGrid() { // Used to update colors, doesn't really do anything else
 
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 		const int& mouseCol = mousePos.x / gols.cellDist;
