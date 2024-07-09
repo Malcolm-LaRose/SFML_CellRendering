@@ -55,7 +55,10 @@ bool genRandomBool(const float& pTrue) {
 	return dist(gen);
 }
 
-const int dist(const sf::Vector2i& pos1, const sf::Vector2i& pos2) {
+// General functions
+
+
+const int& dist(const sf::Vector2i& pos1, const sf::Vector2i& pos2) {
 	return std::sqrt(((pos2.x - pos1.x) * (pos2.x - pos1.x)) + ((pos2.y - pos1.y) * (pos2.y - pos1.y)));
 }
 

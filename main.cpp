@@ -25,44 +25,49 @@
 GoL_Settings& gols = GoL_Settings::getSettings();
 
 
-enum CellType {
-	OFF,
-	ON, // Essentially 'error' type for any higher cell types
-	AIR,
-	WATER,
-	SAND,
-	STONE,
 
 
-	_CELLTYPES // Special member to count the number of cell types
+struct CellType { // Binds type to color, can extend later to more things
+	enum Type {
+		OFF,
+		ON, // Essentially 'error' type for any higher cell types
+
+
+
+		_CELLTYPES // Special member to count the number of cell types
+	} type;
+
+	const sf::Color color() const {
+		switch (type) {
+		case OFF: return Color::DRKGRY;  // Example color
+		case ON: return Color::PHSORNG;   // Example color
+		default: return sf::Color::Transparent; // Fallback color
+		}
+	}
+
+	CellType(Type t) : type(t) {}
 };
 
 const CellType& getRandCellType() {
-	const int randInt = genRandomInt(0, _CELLTYPES - 1);
-	return static_cast<CellType>(randInt);
-}
-
-
-const sf::Color cellTypeToColor(const CellType& ty) {
-	if (ty == ON) return Color::PHSORNG;
-	else if (ty == OFF) return Color::DRKGRY;
+	const int randInt = genRandomInt(0, CellType::_CELLTYPES - 1);
+	return CellType::Type(randInt); 
 }
 
 
 class Cell {
 public:
-	Cell() : type(OFF) {}
+	Cell() : type(CellType::OFF) {}
 
 	void updateCellType(const CellType& ty) {
 		type = ty;
 	}
 	 
 	void flipCellType() { //  On / Off
-		if (type == OFF) {
-			type = ON;
+		if (type.type == CellType::OFF) {
+			type = CellType::ON;
 		return;
 		}
-		else if (type == ON) type = OFF;
+		else if (type.type == CellType::ON) type = CellType::OFF;
 		return;
 	}
 
@@ -106,7 +111,7 @@ public:
 	void resetGrid() {
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
-				updateCellTypeAt(row, col, OFF);
+				updateCellTypeAt(row, col, CellType::OFF);
 				iterNum = 0;
 			}
 		}
@@ -146,23 +151,23 @@ public:
 
 		for (int row = 0; row < gols.rows; row++) { // Make sure not to check edges
 			for (int col = 0; col < gols.cols; col++) {
-				int numAlive = checkMooreNeighborhoodFor(row, col, ON);
+				int numAlive = checkMooreNeighborhoodFor(row, col, CellType::ON);
 
 				const CellType& currentCellType = grid.getCellTypeAt(row, col);
 
 				// Actual GoL
-				if (currentCellType == ON) {
+				if (currentCellType.type == CellType::ON) {
 					if (numAlive < 2 || numAlive > 3) {
-						updatedGrid.updateCellTypeAt(row, col, OFF);
+						updatedGrid.updateCellTypeAt(row, col, CellType::OFF);
 						if (!gridChanged) gridChanged = true;
 					}
 					else {
-						updatedGrid.updateCellTypeAt(row, col, ON);
+						updatedGrid.updateCellTypeAt(row, col, CellType::ON);
 					}
 				}
-				else if (currentCellType == OFF) {
+				else if (currentCellType.type == CellType::OFF) {
 					if (numAlive == 3) {
-						updatedGrid.updateCellTypeAt(row, col, ON);
+						updatedGrid.updateCellTypeAt(row, col, CellType::ON);
 						if (!gridChanged) gridChanged = true;
 					}
 				}
@@ -208,7 +213,7 @@ private:
 				if (!isInBounds(row + i, col + j)) {
 					continue;
 				}
-				if ((grid.getCellTypeAt(row + i, col + j) == ty)) {
+				if ((grid.getCellTypeAt(row + i, col + j).type == ty.type)) {
 					count++;
 				}
 			}
@@ -358,7 +363,6 @@ private:
 	void handleEvents() {
 		sf::Event event;
 
-
 		while (window.pollEvent(event)) {
 			switch (event.type) {
 			case sf::Event::Closed:
@@ -468,7 +472,7 @@ private:
 
 	}
 
-	void bresenhamTool(int x0, int y0, int x1, int y1)
+	void bresenhamTool(int x0, int y0, int x1, int y1) // Draw a line between point a and point b
 	{
 		int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
 		int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -481,6 +485,16 @@ private:
 			if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
 			if (e2 <= dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
 		}
+	}
+
+	void linePreview(const sf::Vector2f& firstPos, const sf::Vector2f& currentPos) {
+		// Make a line from 1st pos to current mouse pos
+		// 
+		// Store that line in an array
+		// Flip cells corresponding to that line to cyan
+		// on each update, check if the line has changed
+		// If the line changed, revert old line to cyan and make new line
+
 	}
 
 	void plotCircle(const sf::Vector2i& pos1, const sf::Vector2i& pos2)
@@ -522,9 +536,7 @@ private:
 					const int& x = col * (gols.cellDist) + gols.borderSize;
 					const int& y = row * (gols.cellDist) + gols.borderSize;
 
-					const CellType& cellType = grid.getCellTypeAt(row, col);
-
-					const sf::Color& color = cellTypeToColor(cellType);
+					const sf::Color& color = grid.getCellTypeAt(row, col).color();
 
 					cells[i].position = sf::Vector2f(x, y);
 					cells[i].color = color;
@@ -542,10 +554,7 @@ private:
 
 					const sf::Vector2i& pos = sf::Mouse::getPosition(window);
 
-					const CellType& cellType = grid.getCellTypeAt(row, col);
-
-
-					sf::Color color = cellTypeToColor(cellType);
+					const sf::Color& color = grid.getCellTypeAt(row, col).color();
 
 
 					// First triangle (top-left, top-right, bottom-right)
@@ -582,9 +591,7 @@ private:
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
 
-					const CellType& cellType = grid.getCellTypeAt(row, col);
-
-					sf::Color color = cellTypeToColor(cellType);
+					sf::Color color = grid.getCellTypeAt(row, col).color();
 
 					if ((row == mouseRow) && (col == mouseCol)) {
 						color = Color::CYAN;
@@ -603,10 +610,7 @@ private:
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
 
-
-					const CellType& cellType = grid.getCellTypeAt(row, col);
-
-					sf::Color color = cellTypeToColor(cellType);
+					sf::Color color = grid.getCellTypeAt(row, col).color();
 
 					if ((row == mouseRow) && (col == mouseCol)) {
 						color = Color::CYAN;
