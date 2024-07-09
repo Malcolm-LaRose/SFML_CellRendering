@@ -18,12 +18,17 @@
 #include <SFML/Graphics.hpp>
 
 #include <array>
+#include <algorithm>
 #include <cmath>
 // #include <iostream>
 #include <vector>
 
 GoL_Settings& gols = GoL_Settings::getSettings();
 
+
+bool operator<(const sf::Vector2i& lhs, const sf::Vector2i& rhs) {
+	return (lhs.x < rhs.x) || (lhs.x == rhs.x && lhs.y < rhs.y);
+}
 
 
 
@@ -129,12 +134,22 @@ public:
 		++iterNum;
 	}
 
-	void setHighlightedCell(const sf::Vector2i& cell) {
-		highlightedCell = cell;
+	void addHighlightedCell(const sf::Vector2i& cell) {
+		if (!isCellHighlighted(cell)) {
+			highlightedCells.push_back(cell);
+		}
 	}
 
-	const sf::Vector2i& getHighlightedCell() const {
-		return highlightedCell;
+	bool isCellHighlighted(const sf::Vector2i& cell) const {
+		return std::find(highlightedCells.begin(), highlightedCells.end(), cell) != highlightedCells.end();
+	}
+
+	void clearHighlightedCells() {
+		highlightedCells.clear();
+	}
+
+	const std::vector<sf::Vector2i>& getHighlightedCells() const {
+		return highlightedCells;
 	}
 
 
@@ -142,7 +157,7 @@ private:
 
 	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON
 
-	sf::Vector2i highlightedCell;
+	std::vector<sf::Vector2i> highlightedCells; // Use set to avoid duplicates
 
 	uint32_t iterNum = 0;
 
@@ -437,7 +452,9 @@ private:
 		const int mouseCol = mousePos.x / gols.cellDist;
 		const int mouseRow = mousePos.y / gols.cellDist;
 
-		grid.setHighlightedCell(sf::Vector2i(mouseRow, mouseCol));
+		// Clear all highlighted cells except the current one under the mouse
+		grid.clearHighlightedCells();
+		grid.addHighlightedCell(sf::Vector2i(mouseRow, mouseCol));
 	}
 
 
@@ -463,8 +480,10 @@ private:
 		int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
 		int err = dx + dy, e2; /* error value e_xy */
 
+		grid.clearHighlightedCells(); // Clear previous highlights
+
 		while (true) {
-			grid.setHighlightedCell(sf::Vector2i(x0, y0));
+			grid.addHighlightedCell(sf::Vector2i(x0, y0));
 			if (x0 == x1 && y0 == y1) break;
 			e2 = 2 * err;
 			if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
@@ -572,12 +591,13 @@ private:
 		if (gols.cellDist == 1) {
 
 			int i = 0;
+
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
 
 					sf::Color color = grid.getCellTypeAt(row, col).color();
 
-					if (row == grid.getHighlightedCell().x && col == grid.getHighlightedCell().y) {
+					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
 						color = Color::CYAN; // Highlight color
 					}
 
@@ -586,8 +606,6 @@ private:
 					++i;
 				}
 			}
-
-
 
 			window.draw(cells);
 		}
@@ -598,7 +616,7 @@ private:
 
 					sf::Color color = grid.getCellTypeAt(row, col).color();
 
-					if (row == grid.getHighlightedCell().x && col == grid.getHighlightedCell().y) {
+					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
 						color = Color::CYAN; // Highlight color
 					}
 
