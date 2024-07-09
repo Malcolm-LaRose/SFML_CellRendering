@@ -3,9 +3,9 @@
 // Goals for AFTER completion --> don't touch until multiple types works first, do roughly in order
 //
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
-// --> Try to separate GOL code from rendering code as much as possible
-// --> Separate bresenham algorithm from cell flipping so I can resuse it more easily (line and circle previews...) --> Do line and circle preview functions
-// Add error checking
+// Do line and circle preview functions
+// Add error checking/ reporting
+// Add gui stuff: debug info, tool selection, etc...
 // more optimization...
 
 
@@ -24,12 +24,6 @@
 #include <vector>
 
 GoL_Settings& gols = GoL_Settings::getSettings();
-
-
-bool operator<(const sf::Vector2i& lhs, const sf::Vector2i& rhs) {
-	return (lhs.x < rhs.x) || (lhs.x == rhs.x && lhs.y < rhs.y);
-}
-
 
 
 struct CellType { // Binds type to color, can extend later to more things like behaviour
@@ -399,12 +393,6 @@ private:
 				const int& row = mousePos.y / gols.cellDist;
 				firstPos = sf::Vector2i(row, col);
 
-				// Line preview tool maybe goes here? How to turn off line preview when mouse released...
-				if (event.mouseButton.button == sf::Mouse::Left) {
-					// DDATool(secondPos, firstPos);
-					bresenhamHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
-				}
-
 				break;
 			}
 			case sf::Event::MouseButtonReleased: {
@@ -413,7 +401,6 @@ private:
 				const int& row = mousePos.y / gols.cellDist;
 
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					// DDATool(secondPos, firstPos);
 					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
@@ -423,6 +410,11 @@ private:
 			}
 			case sf::Event::MouseMoved: {
 				handleMouseHover();
+
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					bresenhamHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
+				}
+
 				break;
 			}
 			case sf::Event::KeyPressed:
@@ -436,7 +428,7 @@ private:
 					}
 				}
 				if (event.key.code == sf::Keyboard::R) {
-					grid.resetGrid(); // This is why we wanted grid to be public (private seems overused!)
+					grid.resetGrid();
 				}
 				if (event.key.code == sf::Keyboard::Z) {
 					grid.randomizeGrid();
@@ -490,15 +482,6 @@ private:
 			if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
 			if (e2 <= dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
 		}
-	}
-
-	void linePreview(const sf::Vector2f& firstPos, const sf::Vector2f& currentPos) {
-		// Make a line from 1st pos to current mouse pos
-		// 
-		// Store that line in an array
-		// Flip cells corresponding to that line to cyan
-		// on each update, check if the line has changed
-		// If the line changed, revert old line to cyan and make new line
 
 	}
 
