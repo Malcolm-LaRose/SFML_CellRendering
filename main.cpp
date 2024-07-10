@@ -3,16 +3,18 @@
 // GOALS
 // 
 // Fix rendering bottleneck 
+// --> Make cells know their position, fix later if laggy
 // --> Maybe make the cells vertex array a vertex buffer
+// --> May have overcomplicated method of coloring...
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
-// Do line and circle preview functions
+// Do circle preview function
 // Add error checking/ reporting
 // Add gui stuff: debug info, tool selection, etc...
 // more optimization...
 
 
 
-#include "color.h"
+#include "Color.h"
 #include "Settings.h"
 
 #include <GL/glew.h>
@@ -20,7 +22,6 @@
 #include <SFML/Graphics.hpp>
 
 #include <array>
-#include <algorithm>
 #include <cmath>
 // #include <iostream>
 #include <vector>
@@ -75,8 +76,17 @@ public:
 	}
 
 
+	void setCellPos(const sf::Vector2i& p) {
+		pos = p;
+	}
+
+	const sf::Vector2i& getCellPos() {
+		return pos;
+	}
+
 private:
 	CellType type; 
+	sf::Vector2i pos; // Grid pos, not pixel pos
 
 };
 
