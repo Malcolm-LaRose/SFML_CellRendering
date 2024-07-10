@@ -3,6 +3,8 @@
 // GOALS
 // 
 // Fix rendering bottleneck 
+// --> Something to do with the highlight cells function
+// --> Highlighted cells should be pointers to the highlighted cells, not copies
 // --> Maybe make the cells vertex array a vertex buffer
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
 // Do line and circle preview functions
@@ -22,7 +24,7 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
-// #include <iostream>
+#include <iostream>
 #include <vector>
 
 GoL_Settings& gols = GoL_Settings::getSettings();
@@ -164,15 +166,30 @@ public:
 		return highlightedCells;
 	}
 
+	const sf::Vector2i& inferPositionFromPointer(const Cell cell) const {
+		
+		for (int row = 0; row < gols.rows; ++row) {
+			for (int col = 0; col < gols.cols; ++col) {
+				if (&grid[row][col] == &cell) {
+					std::cout << "Cell located at " << row << ", " << col << std::endl;
+					return sf::Vector2i(row, col);
+				}
+			}
+		}
+		// If the cell is not found, return an invalid position
+		std::cout << "Cell not found in grid" << std::endl;
+		return sf::Vector2i(-1, -1);
+
+	}
+
 
 private:
 
-	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON
+	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON -- def cheaper to use arrays over vectors, grid doesn't need resizing
 
-	std::vector<sf::Vector2i> highlightedCells; // Use set to avoid duplicates
+	std::vector<sf::Vector2i> highlightedCells; // Holds addresses of cells that are highlighted by the cursor or a tool
 
 	uint32_t iterNum = 0;
-
 
 };
 
@@ -410,7 +427,7 @@ private:
 				const int& col = mousePos.x / gols.cellDist;
 				const int& row = mousePos.y / gols.cellDist;
 				firstPos = sf::Vector2i(row, col);
-
+				grid.inferPositionFromPointer(grid.getGrid()[firstPos.x][firstPos.y]);
 				break;
 			}
 			case sf::Event::MouseButtonReleased: {
