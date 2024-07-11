@@ -168,7 +168,7 @@ public:
 
 private:
 
-	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON --> Can be 1d array instead since cells know their pos now
+	std::vector<std::vector<Cell>> grid; // Can be 1d vector instead
 
 	std::unordered_set<sf::Vector2i> highlightedCells; // Should maybe hold pointers to vectors instead...
 
@@ -438,7 +438,11 @@ private:
 				handleMouseHover();
 
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-					bresenhamHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); 
+					bresenhamLineHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); 
+				}
+
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+					circleHighlighter(secondPos, firstPos);
 				}
 
 				break;
@@ -473,7 +477,7 @@ private:
 		if (sf::Vector2i(mouseRow, mouseCol) != secondPos) { // Skips clearing and adding if mouse hasn't moved to a new cell
 			secondPos = sf::Vector2i(mouseRow, mouseCol);
 
-			grid.clearHighlightedCells(); // MIGHT BE THE SOURCE OF LAG!!!
+			grid.clearHighlightedCells();
 			grid.addHighlightedCell(secondPos);
 		}
 
@@ -496,7 +500,7 @@ private:
 		}
 	}
 
-	void bresenhamHighlighter(int x0, int y0, int x1, int y1) {
+	void bresenhamLineHighlighter(int x0, int y0, int x1, int y1) {
 		int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
 		int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
 		int err = dx + dy, e2; /* error value e_xy */
@@ -532,6 +536,29 @@ private:
 			if (r > x || err > y) err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
 		} while (x < 0);
 	}
+
+	void circleHighlighter(const sf::Vector2i& pos1, const sf::Vector2i& pos2) {
+		int xm, ym;
+
+		xm = pos2.x;
+		ym = pos2.y;
+
+		int r = dist(pos1, pos2);
+
+		grid.clearHighlightedCells();
+
+		int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
+		do {
+			grid.addHighlightedCell(sf::Vector2i(xm - x, ym + y)); /*   I. Quadrant */
+			grid.addHighlightedCell(sf::Vector2i(xm - y, ym - x)); /*  II. Quadrant */
+			grid.addHighlightedCell(sf::Vector2i(xm + x, ym - y)); /* III. Quadrant */
+			grid.addHighlightedCell(sf::Vector2i(xm + y, ym + x)); /*  IV. Quadrant */
+			r = err;
+			if (r <= y) err += ++y * 2 + 1;           /* e_xy+e_y < 0 */
+			if (r > x || err > y) err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
+		} while (x < 0);
+	}
+
 
 	inline void update() {
 		game.gameOfLife();
