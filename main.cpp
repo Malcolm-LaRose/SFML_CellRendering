@@ -3,7 +3,10 @@
 // GOALS
 // 
 // Fix rendering bottleneck 
+// --> Make cells know if they are highlighted
 // --> Maybe make the cells vertex array a vertex buffer
+// --> Is algorithm header faster?
+// --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
 // Do line and circle preview functions
 // Add error checking/ reporting
@@ -64,7 +67,7 @@ public:
 	void flipCellType() { //  On / Off
 		if (type.type == CellType::OFF) {
 			type = CellType::ON;
-		return;
+			return;
 		}
 		else if (type.type == CellType::ON) type = CellType::OFF;
 		return;
@@ -74,9 +77,9 @@ public:
 		return type;
 	}
 
-
 private:
 	CellType type; 
+	bool highlighted = false; // Try this too, compare to old version
 
 };
 
@@ -96,9 +99,13 @@ public:
 		return cell.getCellType();
 	}
 
+	const CellType& getCellTypeOf(const Cell& cell) const {}
+
 	void updateCellTypeAt(const int& row, const int& col, const CellType& ty) {
 		grid[row][col].updateCellType(ty);
 	}
+
+	void updateCellTypeOf(const Cell& cell, const CellType& ty) {}
 
 	void flipCellTypeAt(const int& row, const int& col) {
 
@@ -106,6 +113,8 @@ public:
 
 		grid[row][col].flipCellType();
 	}
+
+	void flipCellTypeOf(const Cell& cell) {}
 
 	void resetGrid() {
 		for (int row = 0; row < gols.rows; row++) {
@@ -126,7 +135,7 @@ public:
 		}
 	}
 
-	void incIterNum() {
+	inline void incIterNum() {
 		++iterNum;
 	}
 
@@ -156,7 +165,7 @@ public:
 		return false;
 	}
 
-	void clearHighlightedCells() {
+	inline void clearHighlightedCells() {
 		highlightedCells.clear();
 	}
 
@@ -167,9 +176,9 @@ public:
 
 private:
 
-	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON
+	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON --> Can be 1d array instead since cells know their pos now
 
-	std::vector<sf::Vector2i> highlightedCells; // Use set to avoid duplicates
+	std::vector<sf::Vector2i> highlightedCells; // Should hold pointers to cells instead
 
 	uint32_t iterNum = 0;
 
@@ -184,7 +193,7 @@ public:
 		Grid updatedGrid;
 		bool gridChanged = false;
 
-		for (int row = 0; row < gols.rows; row++) { // Make sure not to check edges
+		for (int row = 0; row < gols.rows; row++) { 
 			for (int col = 0; col < gols.cols; col++) {
 				int numAlive = checkMooreNeighborhoodFor(row, col, CellType::ON);
 
@@ -280,11 +289,11 @@ public:
 		// Calculate cell positions
 		if (gols.cellDist == 1) {
 			cells.setPrimitiveType(sf::Points);
-			cells.resize(gols.rows * gols.cols);
+			cells.resize(gols.numCells);
 		}
 		else {
 			cells.setPrimitiveType(sf::Triangles);
-			cells.resize(gols.rows * gols.cols * 6);
+			cells.resize(gols.numCells * 6);
 		}
 		calcVertices();
 
@@ -420,7 +429,7 @@ private:
 
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					grid.clearHighlightedCells();
-					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
+					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); 
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
 					plotCircle(secondPos, firstPos);
@@ -431,7 +440,7 @@ private:
 				handleMouseHover();
 
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-					bresenhamHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); // Cleaner endpoints than DDA
+					bresenhamHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); 
 				}
 
 				break;
@@ -466,7 +475,7 @@ private:
 		if (sf::Vector2i(mouseRow, mouseCol) != secondPos) { // Skips clearing and adding if mouse hasn't moved to a new cell
 			secondPos = sf::Vector2i(mouseRow, mouseCol);
 
-			grid.clearHighlightedCells();
+			grid.clearHighlightedCells(); // MIGHT BE THE SOURCE OF LAG!!!
 			grid.addHighlightedCell(secondPos);
 		}
 
@@ -526,12 +535,12 @@ private:
 		} while (x < 0);
 	}
 
-	void update() {
+	inline void update() {
 		game.gameOfLife();
 	}
 
 
-	void renderWorld() {
+	inline void renderWorld() {
 		window.draw(borderAndBGRect);
 	}
 
@@ -639,7 +648,7 @@ private:
 	}
 
 
-	void renderAll() {
+	inline void renderAll() {
 		renderWorld();
 		vertexRenderGrid();
 	}

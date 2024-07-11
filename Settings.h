@@ -8,7 +8,7 @@
 
 struct GoL_Settings {
 
-	static GoL_Settings& getSettings() {
+	inline static GoL_Settings& getSettings() {
 		static GoL_Settings instance;
 		return instance;
 	}
@@ -20,6 +20,7 @@ struct GoL_Settings {
 
 	static constexpr int cols = 640; // 730 --> x dir
 	static constexpr int rows = 360; // 410 --> y dir
+	static constexpr int numCells = rows * cols;
 	static constexpr char cellSpacing = borderSize;
 	static constexpr char cellSize = 4;
 	static constexpr char cellDist = cellSize + cellSpacing;
