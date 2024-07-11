@@ -3,7 +3,7 @@
 // GOALS
 // 
 // Address potential future bottlenecks
-// --> Make grid store cells linearly (only one vector)
+// --> Optimize grid store cells linearly (only one vector)
 // --> Make the cells vertex array a vertex buffer
 // --> Learn about hashing / hash tables
 // --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
@@ -97,51 +97,50 @@ class Grid {
 public:
 
 	Grid() {
-		grid.resize(gols.rows, std::vector<Cell>(gols.cols)); 
+		grid.resize(gols.rows * gols.cols); 
 	}
 
-	const std::vector<std::vector<Cell>>& getGrid() const {
+	const std::vector<Cell>& getGrid() const {
 		return grid;
 	}
 
 	const CellType& getCellTypeAt(const int& row, const int& col) const {
-		return grid[row][col].getCellType();
-	}
+		size_t index = convertRowColToIndex(row, col);
 
-	// const CellType& getCellTypeOf(const Cell& cell) const {}
+		return grid[index].getCellType();
+	}
 
 	void updateCellTypeAt(const int& row, const int& col, const CellType& ty) {
-		grid[row][col].updateCellType(ty);
+		size_t index = convertRowColToIndex(row, col);
+
+		grid[index].updateCellType(ty);
 	}
 
-	// void updateCellTypeOf(const Cell& cell, const CellType& ty) {}
+	void updateCellTypeAtIndex(const size_t& ind, const CellType& ty) {
+		grid[ind].updateCellType(ty);
+	}
 
 	void flipCellTypeAt(const int& row, const int& col) {
+		size_t index = convertRowColToIndex(row, col);
 
 		if (row < 0 || row >= gols.rows || col < 0 || col >= gols.cols) return;
 
-		grid[row][col].flipCellType();
+		grid[index].flipCellType();
 	}
 
-	// void flipCellTypeOf(const Cell& cell) {}
-
 	void resetGrid() {
-		for (int row = 0; row < gols.rows; row++) {
-			for (int col = 0; col < gols.cols; col++) {
-				updateCellTypeAt(row, col, CellType::OFF);
-				iterNum = 0;
-			}
+		for (int i = 0; i < gols.numCells; ++i) {
+				updateCellTypeAtIndex(i, CellType::OFF);
 		}
+		iterNum = 0;
 	}
 
 	void randomizeGrid() {
-		for (int row = 0; row < gols.rows; row++) {
-			for (int col = 0; col < gols.cols; col++) {
+		for (int i = 0; i < gols.numCells; ++i) {
 				const CellType& randCellType = getRandCellType();
-				updateCellTypeAt(row, col, randCellType);
-				iterNum = 0;
-			}
+				updateCellTypeAtIndex(i, randCellType);
 		}
+		iterNum = 0;
 	}
 
 	inline void incIterNum() {
@@ -167,12 +166,16 @@ public:
 
 private:
 
-	std::vector<std::vector<Cell>> grid; // Can be 1d vector instead
+	std::vector<Cell> grid; // Can be 1d vector instead --> Should rename from grid
 
 	std::unordered_set<sf::Vector2i> highlightedCells; 
 
 	uint32_t iterNum = 0;
 
+	const size_t& convertRowColToIndex(const int& row, const int& col) const {
+		size_t index = (gols.rows * row) + col; // Need arithmetic to determine position in cells array (try this)
+		return index;
+	}
 
 };
 
