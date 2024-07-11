@@ -3,6 +3,7 @@
 // GOALS
 // 
 // Fix rendering bottleneck 
+// --> Make grid store cells linearly (only one vector)
 // --> Make cells know if they are highlighted
 // --> Maybe make the cells vertex array a vertex buffer
 // --> Is algorithm header faster?
@@ -27,8 +28,19 @@
 #include <cmath>
 // #include <iostream>
 #include <vector>
+#include <unordered_set>
 
 GoL_Settings& gols = GoL_Settings::getSettings();
+
+// Define hash function for sf::Vector2i --> I don't understand how this works
+namespace std {
+	template<> struct hash<sf::Vector2i> {
+		size_t operator()(const sf::Vector2i& vec) const {
+			// Use a simple hash combining x and y values
+			return std::hash<int>()(vec.x) ^ (std::hash<int>()(vec.y) << 1);
+		}
+	};
+}
 
 
 struct CellType { // Binds type to color, can extend later to more things like behaviour
@@ -139,36 +151,18 @@ public:
 	}
 
 	void addHighlightedCell(const sf::Vector2i& cell) {
-		// Check if the cell is already highlighted
-		bool alreadyHighlighted = false;
-		for (const auto& highlightedCell : highlightedCells) {
-			if (highlightedCell.x == cell.x && highlightedCell.y == cell.y) {
-				alreadyHighlighted = true;
-				break;
-			}
-		}
-
-		// If not already highlighted, add it
-		if (!alreadyHighlighted) {
-			highlightedCells.push_back(cell);
-		}
-	
+		highlightedCells.insert(cell);
 	}
 
 	const bool isCellHighlighted(const sf::Vector2i& cell) const {
-		for (const auto& highlightedCell : highlightedCells) {
-			if (highlightedCell.x == cell.x && highlightedCell.y == cell.y) {
-				return true;
-			}
-		}
-		return false;
+		return highlightedCells.find(cell) != highlightedCells.end();
 	}
 
 	inline void clearHighlightedCells() {
 		highlightedCells.clear();
 	}
 
-	const std::vector<sf::Vector2i>& getHighlightedCells() const {
+	const std::unordered_set<sf::Vector2i>& getHighlightedCells() const {
 		return highlightedCells;
 	}
 
@@ -177,7 +171,7 @@ private:
 
 	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON --> Can be 1d array instead since cells know their pos now
 
-	std::vector<sf::Vector2i> highlightedCells; // Should hold pointers to cells instead
+	std::unordered_set<sf::Vector2i> highlightedCells; // Should hold pointers to cells instead
 
 	uint32_t iterNum = 0;
 
@@ -236,16 +230,7 @@ public:
 private:
 
 	const bool isInBounds(const int& row, const int& col) const {
-		if (row < 0 || col < 0) {
-			return false;
-		}
-		if (row >= gols.rows || col >= gols.cols) {
-			return false;
-		}
-
-		else {
-			return true;
-		}
+		return row >= 0 && row < gols.rows && col >= 0 && col < gols.cols;
 	}
 
 	const int& checkMooreNeighborhoodFor(const int& row, const int& col, const CellType& ty) const {
@@ -332,6 +317,21 @@ public:
 
 
 	}
+
+	//void setupVertexBuffer(sf::VertexBuffer& vertexBuffer, int xPos, int yPos, int width, int height, const sf::Color& color) {
+	//	sf::Vertex vertexArray[4];
+	//	vertexArray[0].position = sf::Vector2f(xPos, yPos);
+	//	vertexArray[1].position = sf::Vector2f(xPos, yPos + height);
+	//	vertexArray[2].position = sf::Vector2f(xPos + width, yPos + height);
+	//	vertexArray[3].position = sf::Vector2f(xPos + width, yPos);
+
+	//	for (auto& vertex : vertexArray) {
+	//		vertex.color = color;
+	//	}
+
+	//	vertexBuffer.create(4);
+	//	vertexBuffer.update(vertexArray);
+	//}
 
 
 	void frameCounterDisplay(const int& frameTime, const int& avg) {
