@@ -4,15 +4,14 @@
 // 
 // Address potential future bottlenecks
 // --> Make grid store cells linearly (only one vector)
-// --> Make cells know if they are highlighted
 // --> Make the cells vertex array a vertex buffer
 // --> Learn about hashing / hash tables
 // --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
+// 
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
-// Do line and circle preview functions
-// Add error checking/ reporting
+// --> Separate out ALL GoL functionality, including member functions, etc...
+// --> Add error checking/ reporting
 // Add gui stuff: debug info, tool selection, etc...
-// more optimization...
 
 
 
@@ -170,7 +169,7 @@ private:
 
 	std::vector<std::vector<Cell>> grid; // Can be 1d vector instead
 
-	std::unordered_set<sf::Vector2i> highlightedCells; // Should maybe hold pointers to vectors instead...
+	std::unordered_set<sf::Vector2i> highlightedCells; 
 
 	uint32_t iterNum = 0;
 
@@ -570,8 +569,7 @@ private:
 	}
 
 	void calcVertices() { // Used once to place all of the vertices
-		if (gols.cellDist == 1) {
-
+		if constexpr (gols.cellDist == 1) {
 			int i = 0;
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
@@ -627,7 +625,7 @@ private:
 		const int& mouseCol = mousePos.x / gols.cellDist;
 		const int& mouseRow = mousePos.y / gols.cellDist;
 
-		if (gols.cellDist == 1) {
+		if constexpr (gols.cellDist == 1) {
 
 			int i = 0;
 
