@@ -15,7 +15,7 @@
 
 
 
-#include "color.h"
+#include "Color.h"
 #include "Settings.h"
 
 #include <GL/glew.h>
@@ -95,17 +95,16 @@ public:
 	}
 
 	const CellType& getCellTypeAt(const int& row, const int& col) const {
-		const Cell& cell = grid[row][col];
-		return cell.getCellType();
+		return grid[row][col].getCellType();
 	}
 
-	const CellType& getCellTypeOf(const Cell& cell) const {}
+	// const CellType& getCellTypeOf(const Cell& cell) const {}
 
 	void updateCellTypeAt(const int& row, const int& col, const CellType& ty) {
 		grid[row][col].updateCellType(ty);
 	}
 
-	void updateCellTypeOf(const Cell& cell, const CellType& ty) {}
+	// void updateCellTypeOf(const Cell& cell, const CellType& ty) {}
 
 	void flipCellTypeAt(const int& row, const int& col) {
 
@@ -114,7 +113,7 @@ public:
 		grid[row][col].flipCellType();
 	}
 
-	void flipCellTypeOf(const Cell& cell) {}
+	// void flipCellTypeOf(const Cell& cell) {}
 
 	void resetGrid() {
 		for (int row = 0; row < gols.rows; row++) {
