@@ -2,11 +2,11 @@
 // 
 // GOALS
 // 
-// Fix rendering bottleneck 
+// Address potential future bottlenecks
 // --> Make grid store cells linearly (only one vector)
 // --> Make cells know if they are highlighted
-// --> Maybe make the cells vertex array a vertex buffer
-// --> Is algorithm header faster?
+// --> Make the cells vertex array a vertex buffer
+// --> Learn about hashing / hash tables
 // --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
 // Do line and circle preview functions
@@ -26,7 +26,7 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
-// #include <iostream>
+// #include <iostream> // Debugging only
 #include <vector>
 #include <unordered_set>
 
@@ -91,7 +91,6 @@ public:
 
 private:
 	CellType type; 
-	bool highlighted = false; // Try this too, compare to old version
 
 };
 
@@ -171,7 +170,7 @@ private:
 
 	std::vector<std::vector<Cell>> grid; // MIGHT BE CHEAPER TO USE POINTERS SOON --> Can be 1d array instead since cells know their pos now
 
-	std::unordered_set<sf::Vector2i> highlightedCells; // Should hold pointers to cells instead
+	std::unordered_set<sf::Vector2i> highlightedCells; // Should maybe hold pointers to vectors instead...
 
 	uint32_t iterNum = 0;
 
