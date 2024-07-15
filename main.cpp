@@ -3,12 +3,13 @@
 // GOALS
 // 
 // Address potential future bottlenecks
-// --> Make grid store cells linearly (only one vector)
 // --> Make the cells vertex array a vertex buffer
 // --> Learn about hashing / hash tables
 // --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
+// // --> Make grid store cells linearly (only one vector) (way later, figure out sand stuff first)
 // 
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
+// --> Break into more smaller classes
 // --> Separate out ALL GoL functionality, including member functions, etc...
 // --> Add error checking/ reporting
 // Add gui stuff: debug info, tool selection, etc...
@@ -250,6 +251,13 @@ private:
 
 };
 
+
+class EventHandler {
+
+
+
+
+};
 
 
 class World {
