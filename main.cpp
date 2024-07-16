@@ -9,8 +9,7 @@
 // // --> Make grid store cells linearly (only one vector) (way later, figure out sand stuff first)
 // 
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
-// --> Break into more smaller classes
-// --> Separate out ALL GoL functionality, including member functions, etc...
+// --> Break into more smaller classes (maybe?)
 // --> Add error checking/ reporting
 // Add gui stuff: debug info, tool selection, etc...
 
@@ -251,10 +250,9 @@ private:
 
 };
 
+class TypeSelection {
 
-class EventHandler {
-
-
+	// Should make a GUI when the appropriate button is pressed for selecting cell type used for the tools
 
 
 };
@@ -380,7 +378,6 @@ public:
 	}
 
 
-
 private:
 
 	sf::RenderWindow window;
@@ -437,6 +434,7 @@ private:
 					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); 
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
+					grid.clearHighlightedCells();
 					plotCircle(secondPos, firstPos);
 				}
 				break;
@@ -568,7 +566,7 @@ private:
 
 
 	inline void update() {
-		game.gameOfLife();
+		// game.gameOfLife(); // Functionality for GoL all here
 	}
 
 
