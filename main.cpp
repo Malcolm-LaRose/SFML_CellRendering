@@ -44,8 +44,8 @@ namespace std {
 
 struct CellType { // Binds type to color, can extend later to more things like behaviour
 	enum Type {
-		OFF,
-		ON, // Essentially 'error' type for any higher cell types
+		OFF, // New default should be air
+		ON, // Can be stone instead
 
 		_CELLTYPES // Special member to count the number of cell types
 	} type;
