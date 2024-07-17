@@ -14,6 +14,8 @@
 // --> Add error checking/ reporting
 // 
 // Add gui stuff: debug info, tool selection, etc...
+//
+// Look for memory leaks
 
 #include "Color.h"
 #include "Settings.h"
@@ -183,13 +185,13 @@ public:
 		setupVertexBuffer(borderAndBGRect, 0, 0, gols.initScreenWidth, gols.initScreenHeight, Color::EIGENGRAU);
 
 		// Calculate cell positions
-		if (gols.cellDist == 1) {
+		if constexpr (gols.cellDist == 1) {
 			cells.setPrimitiveType(sf::Points);
 			cells.resize(gols.numCells);
 		}
 		else {
 			cells.setPrimitiveType(sf::Triangles);
-			cells.resize(gols.numCells * 6);
+			cells.resize(gols.numCells * 6); // Leak
 		}
 		calcVertices();
 
@@ -198,10 +200,6 @@ public:
 
 		// Set framecounter position
 		frameText.setPosition(gols.borderSize, gols.borderSize);
-	}
-
-	~World() {
-		borderAndBGRect.~VertexBuffer();
 	}
 
 	void setupVertexBuffer(sf::VertexBuffer& vertexBuffer, const int& xPos, const int& yPos, const int& width, const int& height, const sf::Color& color) {
@@ -266,7 +264,7 @@ public:
 
 		}
 
-
+		cells.clear();
 
 	}
 
@@ -583,6 +581,8 @@ int main() {
 	World world;
 
 	world.mainLoop();
+
+	// world.~World();
 
 	return 0;
 }
