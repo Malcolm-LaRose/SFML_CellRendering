@@ -6,10 +6,10 @@
 // --> Make the cells vertex array a vertex buffer
 // --> Learn about hashing / hash tables
 // --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
-// // --> Make grid store cells linearly (only one vector) (way later, figure out sand stuff first)
+// --> Make grid store cells linearly (only one vector) (way later, figure out sand stuff first)
 // 
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
-// --> Break into more smaller classes (maybe?)
+// --> Break into more smaller classes (maybe?) --> e.g. event handling separately?
 // --> Add error checking/ reporting
 // Add gui stuff: debug info, tool selection, etc...
 
@@ -74,15 +74,6 @@ public:
 	void updateCellType(const CellType& ty) {
 		type = ty;
 	}
-	 
-	void flipCellType() { //  On / Off
-		if (type.type == CellType::AIR) {
-			type = CellType::STONE;
-			return;
-		}
-		else if (type.type == CellType::STONE) type = CellType::AIR;
-		return;
-	}
 
 	const CellType& getCellType() const {
 		return type;
@@ -108,22 +99,13 @@ public:
 		return grid[row][col].getCellType();
 	}
 
-	// const CellType& getCellTypeOf(const Cell& cell) const {}
-
 	void updateCellTypeAt(const int& row, const int& col, const CellType& ty) {
+
+		if (col < 0 || col >= gols.cols) return;
+		if (row < 0 || row >= gols.rows) return;
+
 		grid[row][col].updateCellType(ty);
 	}
-
-	// void updateCellTypeOf(const Cell& cell, const CellType& ty) {}
-
-	void flipCellTypeAt(const int& row, const int& col) {
-
-		if (row < 0 || row >= gols.rows || col < 0 || col >= gols.cols) return;
-
-		grid[row][col].flipCellType();
-	}
-
-	// void flipCellTypeOf(const Cell& cell) {}
 
 	void resetGrid() {
 		for (int row = 0; row < gols.rows; row++) {
@@ -423,7 +405,7 @@ private:
 		int err = dx + dy, e2; /* error value e_xy */
 
 		while (true) { 
-			grid.flipCellTypeAt(x0, y0);
+			grid.updateCellTypeAt(x0, y0, CellType::STONE);
 			if (x0 == x1 && y0 == y1) break;
 			e2 = 2 * err;
 			if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
@@ -458,10 +440,10 @@ private:
 
 		int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
 		do {
-			grid.flipCellTypeAt(xm - x, ym + y); /*   I. Quadrant */
-			grid.flipCellTypeAt(xm - y, ym - x); /*  II. Quadrant */
-			grid.flipCellTypeAt(xm + x, ym - y); /* III. Quadrant */
-			grid.flipCellTypeAt(xm + y, ym + x); /*  IV. Quadrant */
+			grid.updateCellTypeAt(xm - x, ym + y, CellType::STONE); /*   I. Quadrant */
+			grid.updateCellTypeAt(xm - y, ym - x, CellType::STONE); /*  II. Quadrant */
+			grid.updateCellTypeAt(xm + x, ym - y, CellType::STONE); /* III. Quadrant */
+			grid.updateCellTypeAt(xm + y, ym + x, CellType::STONE); /*  IV. Quadrant */
 			r = err;
 			if (r <= y) err += ++y * 2 + 1;           /* e_xy+e_y < 0 */
 			if (r > x || err > y) err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
