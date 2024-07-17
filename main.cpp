@@ -44,16 +44,16 @@ namespace std {
 
 struct CellType { // Binds type to color, can extend later to more things like behaviour
 	enum Type {
-		OFF, // New default should be air
-		ON, // Can be stone instead
+		AIR, // New default should be air
+		STONE, // Can be stone instead
 
 		_CELLTYPES // Special member to count the number of cell types
 	} type;
 
 	const sf::Color color() const {
 		switch (type) {
-		case OFF: return Color::DRKGRY;  // Example color
-		case ON: return Color::PHSORNG;   // Example color
+		case AIR: return Color::TRANSP;  // Example color
+		case STONE: return Color::DRKGRY;   // Example color
 		default: return sf::Color::Transparent; // Fallback color
 		}
 	}
@@ -69,18 +69,18 @@ const CellType& getRandCellType() {
 
 class Cell {
 public:
-	Cell() : type(CellType::OFF) {}
+	Cell() : type(CellType::AIR) {}
 
 	void updateCellType(const CellType& ty) {
 		type = ty;
 	}
 	 
 	void flipCellType() { //  On / Off
-		if (type.type == CellType::OFF) {
-			type = CellType::ON;
+		if (type.type == CellType::AIR) {
+			type = CellType::STONE;
 			return;
 		}
-		else if (type.type == CellType::ON) type = CellType::OFF;
+		else if (type.type == CellType::STONE) type = CellType::AIR;
 		return;
 	}
 
@@ -128,7 +128,7 @@ public:
 	void resetGrid() {
 		for (int row = 0; row < gols.rows; row++) {
 			for (int col = 0; col < gols.cols; col++) {
-				updateCellTypeAt(row, col, CellType::OFF);
+				updateCellTypeAt(row, col, CellType::AIR);
 				iterNum = 0;
 			}
 		}
@@ -173,80 +173,6 @@ private:
 
 	uint32_t iterNum = 0;
 
-
-};
-
-class GameOfLife {
-public:
-	GameOfLife() {}
-
-	void gameOfLife() {
-		Grid updatedGrid;
-		bool gridChanged = false;
-
-		for (int row = 0; row < gols.rows; row++) { 
-			for (int col = 0; col < gols.cols; col++) {
-				int numAlive = checkMooreNeighborhoodFor(row, col, CellType::ON);
-
-				const CellType& currentCellType = grid.getCellTypeAt(row, col);
-
-				// Actual GoL
-				if (currentCellType.type == CellType::ON) {
-					if (numAlive < 2 || numAlive > 3) {
-						updatedGrid.updateCellTypeAt(row, col, CellType::OFF);
-						if (!gridChanged) gridChanged = true;
-					}
-					else {
-						updatedGrid.updateCellTypeAt(row, col, CellType::ON);
-					}
-				}
-				else if (currentCellType.type == CellType::OFF) {
-					if (numAlive == 3) {
-						updatedGrid.updateCellTypeAt(row, col, CellType::ON);
-						if (!gridChanged) gridChanged = true;
-					}
-				}
-
-
-			}
-		}
-
-		if (gridChanged) {
-			for (int row = 0; row < gols.rows; ++row) {
-				for (int col = 0; col < gols.cols; ++col) {
-					const CellType& nextType = updatedGrid.getCellTypeAt(row, col);
-					grid.updateCellTypeAt(row, col, nextType);
-				}
-			}
-		}
-		grid.incIterNum();
-
-	}
-
-	Grid grid;
-
-private:
-
-	const bool isInBounds(const int& row, const int& col) const {
-		return row >= 0 && row < gols.rows && col >= 0 && col < gols.cols;
-	}
-
-	const int& checkMooreNeighborhoodFor(const int& row, const int& col, const CellType& ty) const {
-		int count = 0;
-		for (int i = -1; i <= 1; ++i) {
-			for (int j = -1; j <= 1; ++j) {
-				if (i == 0 && j == 0) continue;
-				if (!isInBounds(row + i, col + j)) {
-					continue;
-				}
-				if ((grid.getCellTypeAt(row + i, col + j).type == ty.type)) {
-					count++;
-				}
-			}
-		}
-
-		return count;
-	}
 
 };
 
@@ -388,8 +314,8 @@ private:
 	sf::VertexBuffer borderAndBGRect;
 	sf::VertexArray cells; // Maybe make me a buffer?
 
-	GameOfLife game;
-	Grid& grid = game.grid;
+	// GameOfLife game;
+	Grid grid;
 
 	bool running = true;
 	bool paused = true; // Start paused
