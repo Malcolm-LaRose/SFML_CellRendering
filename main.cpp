@@ -2,18 +2,18 @@
 // 
 // GOALS
 // 
+// Have celltype determine cell behavior
+// 
 // Address potential future bottlenecks
 // --> Make the cells vertex array a vertex buffer
-// --> Learn about hashing / hash tables
 // --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
-// --> Make grid store cells linearly (only one vector) (way later, figure out sand stuff first)
+// --> Make grid store cells linearly (only one vector) (way later, figure out cell update stuff first)
 // 
 // Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
 // --> Break into more smaller classes (maybe?) --> e.g. event handling separately?
 // --> Add error checking/ reporting
+// 
 // Add gui stuff: debug info, tool selection, etc...
-
-
 
 #include "Color.h"
 #include "Settings.h"
@@ -229,21 +229,6 @@ public:
 
 
 	}
-
-	//void setupVertexBuffer(sf::VertexBuffer& vertexBuffer, int xPos, int yPos, int width, int height, const sf::Color& color) {
-	//	sf::Vertex vertexArray[4];
-	//	vertexArray[0].position = sf::Vector2f(xPos, yPos);
-	//	vertexArray[1].position = sf::Vector2f(xPos, yPos + height);
-	//	vertexArray[2].position = sf::Vector2f(xPos + width, yPos + height);
-	//	vertexArray[3].position = sf::Vector2f(xPos + width, yPos);
-
-	//	for (auto& vertex : vertexArray) {
-	//		vertex.color = color;
-	//	}
-
-	//	vertexBuffer.create(4);
-	//	vertexBuffer.update(vertexArray);
-	//}
 
 
 	void frameCounterDisplay(const int& frameTime, const int& avg) {
@@ -474,7 +459,7 @@ private:
 
 
 	inline void update() {
-		// game.gameOfLife(); // Functionality for GoL all here
+		// Call update for each cell here, update behavior to be determined by celltype
 	}
 
 
