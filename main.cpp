@@ -54,9 +54,17 @@ struct CellType { // Binds type to color, can extend later to more things like b
 
 	const sf::Color color() const {
 		switch (type) {
-		case AIR: return Color::TRANSP;  // Example color
+		case AIR: return Color::TRANSP;  
 		case STONE: return Color::DRKGRY;   // Example color
 		default: return sf::Color::Transparent; // Fallback color
+		}
+	}
+
+	void update() const {
+		switch (type) {
+		case AIR:   
+		case STONE:  
+		default: 
 		}
 	}
 
@@ -73,7 +81,7 @@ class Cell {
 public:
 	Cell() : type(CellType::AIR) {}
 
-	void updateCellType(const CellType& ty) {
+	void changeCellType(const CellType& ty) {
 		type = ty;
 	}
 
@@ -106,7 +114,7 @@ public:
 		if (col < 0 || col >= gols.cols) return;
 		if (row < 0 || row >= gols.rows) return;
 
-		grid[row][col].updateCellType(ty);
+		grid[row][col].changeCellType(ty);
 	}
 
 	void resetGrid() {
