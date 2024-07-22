@@ -2,7 +2,7 @@
 // 
 // GOALS
 // 
-// Have celltype determine cell behavior
+// Split into multiple files
 // 
 // Address potential future bottlenecks
 // --> Make the cells vertex array a vertex buffer
@@ -52,47 +52,49 @@ public:
 
 class AirBehavior : public CellBehavior {
 public:
-	virtual void update() override {
-		// Implement behavior for AIR cells
+	static AirBehavior& instance() {
+		static AirBehavior instance;
+		return instance;
+	}
+
+	void update() override {
+		// Air cells do nothing
 	}
 };
 
 class StoneBehavior : public CellBehavior {
 public:
+	static StoneBehavior& instance() {
+		static StoneBehavior instance;
+		return instance;
+	}
+
 	void update() override {
-		// Implement behavior for STONE cells
+		// Stone cells do nothing but other blocks cant pass through them... 
 	}
 };
 
 struct CellType { // Binds type to color, can extend later to more things like behaviour
+
 	enum Type {
 		AIR, // New default should be air
 		STONE, // Can be stone instead
 
 		_CELLTYPES // Special member to count the number of cell types
 	} type;
-
-	//const sf::Color color() const { GET RID OF THIS IN FAVOR OF APPROACH BELOW
-	//	switch (type) {
-	//	case AIR: return Color::TRANSP;  
-	//	case STONE: return Color::DRKGRY;   // Example color
-	//	default: return sf::Color::Transparent; // Fallback color
-	//	}
-	//}
-
 	sf::Color color;
-	CellBehavior* behavior;
+	CellBehavior* behavior; // FUNCTION pointer I think
 
 	CellType(Type t) : type(t) {
 
 		switch (type) {
 		case AIR:
 			color = Color::TRANSP;
-			behavior = new AirBehavior();
+			behavior = &AirBehavior::instance();
 			break;
 		case STONE:
 			color = Color::DRKGRY;
-			behavior = new StoneBehavior();
+			behavior = &StoneBehavior::instance();
 			break;
 		default:
 			color = Color::PHSORNG;
@@ -210,6 +212,7 @@ private:
 class TypeSelection {
 
 	// Should make a GUI when the appropriate button is pressed for selecting cell type used for the tools
+	// For example, pressing middle click brings up a menu for choosing celltype or tooltype... 
 
 
 };
@@ -551,9 +554,8 @@ private:
 					cells[i + 4].position = sf::Vector2f(x + gols.cellDist, y + gols.cellDist);
 					cells[i + 5].position = sf::Vector2f(x, y + gols.cellDist);
 
-					// Set the color of the vertices
 					for (int j = 0; j < 6; ++j) {
-						cells[i + j].color = color; // Change this to the desired color
+						cells[i + j].color = color; 
 					}
 
 					i += 6; // Move to the next set of vertices
