@@ -2,7 +2,7 @@
 // 
 // GOALS
 // 
-// Split into multiple files
+// Split into multiple files (split up world into eventhandler, world, and renderer first)
 // 
 // Address potential future bottlenecks
 // --> Make the cells vertex array a vertex buffer
@@ -19,6 +19,8 @@
 
 #include "Color.h"
 #include "Settings.h"
+
+
 
 #include <GL/glew.h>
 
