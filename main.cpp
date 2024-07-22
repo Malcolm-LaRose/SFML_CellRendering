@@ -44,6 +44,26 @@ namespace std {
 }
 
 
+class CellBehavior {
+public:
+	virtual void update() = 0;
+	virtual ~CellBehavior() {} // Ensure virtual destructor for polymorphic behavior
+};
+
+class AirBehavior : public CellBehavior {
+public:
+	virtual void update() override {
+		// Implement behavior for AIR cells
+	}
+};
+
+class StoneBehavior : public CellBehavior {
+public:
+	void update() override {
+		// Implement behavior for STONE cells
+	}
+};
+
 struct CellType { // Binds type to color, can extend later to more things like behaviour
 	enum Type {
 		AIR, // New default should be air
@@ -52,23 +72,42 @@ struct CellType { // Binds type to color, can extend later to more things like b
 		_CELLTYPES // Special member to count the number of cell types
 	} type;
 
-	const sf::Color color() const {
+	//const sf::Color color() const { GET RID OF THIS IN FAVOR OF APPROACH BELOW
+	//	switch (type) {
+	//	case AIR: return Color::TRANSP;  
+	//	case STONE: return Color::DRKGRY;   // Example color
+	//	default: return sf::Color::Transparent; // Fallback color
+	//	}
+	//}
+
+	sf::Color color;
+	CellBehavior* behavior;
+
+	CellType(Type t) : type(t) {
+
 		switch (type) {
-		case AIR: return Color::TRANSP;  
-		case STONE: return Color::DRKGRY;   // Example color
-		default: return sf::Color::Transparent; // Fallback color
+		case AIR:
+			color = Color::TRANSP;
+			behavior = new AirBehavior();
+			break;
+		case STONE:
+			color = Color::DRKGRY;
+			behavior = new StoneBehavior();
+			break;
+		default:
+			color = Color::PHSORNG;
+			behavior = nullptr;
+			break;
 		}
 	}
 
 	void update() const {
-		switch (type) {
-		case AIR:   
-		case STONE:  
-		default: 
+		if (behavior != nullptr) {
+			behavior->update();
 		}
 	}
 
-	CellType(Type t) : type(t) {}
+
 };
 
 const CellType& getRandCellType() {
@@ -481,7 +520,7 @@ private:
 					const int& x = col * (gols.cellDist) + gols.borderSize;
 					const int& y = row * (gols.cellDist) + gols.borderSize;
 
-					const sf::Color& color = grid.getCellTypeAt(row, col).color();
+					const sf::Color& color = grid.getCellTypeAt(row, col).color;
 
 					cells[i].position = sf::Vector2f(x, y);
 					cells[i].color = color;
@@ -499,7 +538,7 @@ private:
 
 					const sf::Vector2i& pos = sf::Mouse::getPosition(window);
 
-					const sf::Color& color = grid.getCellTypeAt(row, col).color();
+					const sf::Color& color = grid.getCellTypeAt(row, col).color;
 
 
 					// First triangle (top-left, top-right, bottom-right)
@@ -537,7 +576,7 @@ private:
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
 
-					sf::Color color = grid.getCellTypeAt(row, col).color();
+					sf::Color color = grid.getCellTypeAt(row, col).color;
 
 					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
 						color = Color::CYAN; // Highlight color
@@ -556,7 +595,7 @@ private:
 			for (int row = 0; row < gols.rows; ++row) {
 				for (int col = 0; col < gols.cols; ++col) {
 
-					sf::Color color = grid.getCellTypeAt(row, col).color();
+					sf::Color color = grid.getCellTypeAt(row, col).color;
 
 					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
 						color = Color::CYAN; // Highlight color
