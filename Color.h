@@ -20,6 +20,10 @@ struct Color {
     static const sf::Color BLUEPRINT;
     static const sf::Color TRANSL50;
     static const sf::Color TRANSP;
+
+    static const sf::Color SAND;
+    static const sf::Color STONE;
+    static const sf::Color AIR;
 };
 
 // Define the static constants
@@ -37,5 +41,9 @@ const sf::Color Color::LANDLORDWHITE(250, 249, 246, 255);
 const sf::Color Color::BLUEPRINT(96, 130, 166, 255);
 const sf::Color Color::TRANSL50(10, 10, 10, 128);
 const sf::Color Color::TRANSP(0, 0, 0, 0);
+
+const sf::Color Color::SAND(242, 210, 169, 255);
+const sf::Color Color::STONE(76, 76, 76, 255);
+const sf::Color Color::AIR(0, 0, 0, 0);
 
 #endif // COLOR_H

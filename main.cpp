@@ -3,6 +3,7 @@
 // GOALS
 // 
 // Split into multiple files (split up world into eventhandler, world, and renderer first)
+// Add GUI for tools and types
 // 
 // Address potential future bottlenecks
 // --> Make the cells vertex array a vertex buffer
@@ -50,6 +51,11 @@ class CellBehavior {
 public:
 	virtual void update() = 0;
 	virtual ~CellBehavior() {} // Ensure virtual destructor for polymorphic behavior
+
+	bool permeable;
+
+protected:
+	CellBehavior(bool p) : permeable(p) {}
 };
 
 class AirBehavior : public CellBehavior {
@@ -62,6 +68,9 @@ public:
 	void update() override {
 		// Air cells do nothing
 	}
+
+private:
+	AirBehavior() : CellBehavior(true) {} // Air is permeable
 };
 
 class StoneBehavior : public CellBehavior {
@@ -74,6 +83,24 @@ public:
 	void update() override {
 		// Stone cells do nothing but other blocks cant pass through them... 
 	}
+
+private:
+	StoneBehavior() : CellBehavior(false) {} // Stone is not permeable
+};
+
+class SandBehavior : public CellBehavior {
+public: 
+	static SandBehavior& instance() {
+		static SandBehavior instance;
+		return instance;
+	}
+
+	void update() override {
+		// Sand falls straight down (need to figure out piling)
+	}
+
+private:
+	SandBehavior() : CellBehavior(true) {} // Sand is permeable
 };
 
 struct CellType { // Binds type to color, can extend later to more things like behaviour
@@ -91,14 +118,14 @@ struct CellType { // Binds type to color, can extend later to more things like b
 
 		switch (type) {
 		case AIR:
-			color = Color::TRANSP;
+			color = Color::AIR;
 			behavior = &AirBehavior::instance();
 			break;
 		case STONE:
-			color = Color::DRKGRY;
+			color = Color::STONE;
 			behavior = &StoneBehavior::instance();
 			break;
-		default:
+		default: // Error type
 			color = Color::PHSORNG;
 			behavior = nullptr;
 			break;
@@ -632,8 +659,6 @@ int main() {
 	World world;
 
 	world.mainLoop();
-
-	// world.~World();
 
 	return 0;
 }
