@@ -1,23 +1,3 @@
-// Sandy Rendering
-// 
-// GOALS
-// 
-// Split into multiple files (split up world into eventhandler, world, and renderer first)
-// Add GUI for tools and types
-// 
-// Address potential future bottlenecks
-// --> Make the cells vertex array a vertex buffer
-// --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
-// --> Make grid store cells linearly (only one vector) (way later, figure out cell update stuff first)
-// 
-// Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
-// --> Break into more smaller classes (maybe?) --> e.g. event handling separately?
-// --> Add error checking/ reporting
-// 
-// Add gui stuff: debug info, tool selection, etc...
-//
-// Look for memory leaks
-
 #include "Color.h"
 #include "Settings.h"
 
@@ -247,11 +227,11 @@ class TypeSelection {
 };
 
 
-class World {
+class EventHandler {};
+
+class Renderer {
 public:
-
-	World() {
-
+	Renderer(Grid& grid) : grid(grid) {
 		// Init SFML
 		window.create(sf::VideoMode(gols.initScreenWidth, gols.initScreenHeight), "Physics Box", sf::Style::Titlebar | sf::Style::Close);
 		window.setKeyRepeatEnabled(false);
@@ -281,6 +261,95 @@ public:
 		frameText.setPosition(gols.borderSize, gols.borderSize);
 	}
 
+	inline void renderAll() {
+	renderWorld();
+	renderVertices();
+	}
+
+	inline sf::RenderWindow& getWindowRef() {
+		return window;
+	}
+
+	inline void clearCells() {
+		cells.clear();
+	}
+
+	void frameCounterDisplay(const int& frameTime, const int& avg) {
+		frameText.setString("F Time (us): " + itostr(frameTime) + "\nAvg FPS: " + itostr(avg)); // Maybe do with c style strings?
+
+		window.draw(frameText);
+	}
+
+	sf::RenderWindow window;
+	sf::Clock clock;
+
+private:
+
+	sf::Font font;
+	sf::Text frameText;
+
+	sf::VertexBuffer borderAndBGRect;
+	sf::VertexArray cells;
+
+	Grid& grid; // Need to be able to get info from the grid, figure out how this works again...
+
+	void calcVertices() {
+		if constexpr (gols.cellDist == 1) {
+			int i = 0;
+			for (int row = 0; row < gols.rows; ++row) {
+				for (int col = 0; col < gols.cols; ++col) {
+					const int& x = col * (gols.cellDist) + gols.borderSize;
+					const int& y = row * (gols.cellDist) + gols.borderSize;
+
+					const sf::Color& color = grid.getCellTypeAt(row, col).color;
+
+					cells[i].position = sf::Vector2f(x, y);
+					cells[i].color = color;
+					++i;
+				}
+			}
+		}
+		else {
+			int i = 0;
+			for (int row = 0; row < gols.rows; ++row) {
+				for (int col = 0; col < gols.cols; ++col) {
+					// Position of upper left corner of cell
+					const int& x = col * (gols.cellDist) + gols.borderSize;
+					const int& y = row * (gols.cellDist) + gols.borderSize;
+
+					const sf::Vector2i& pos = sf::Mouse::getPosition(window);
+
+					const sf::Color& color = grid.getCellTypeAt(row, col).color;
+
+
+					// First triangle (top-left, top-right, bottom-right)
+					cells[i].position = sf::Vector2f(x, y);
+					cells[i + 1].position = sf::Vector2f(x + gols.cellDist, y);
+					cells[i + 2].position = sf::Vector2f(x + gols.cellDist, y + gols.cellDist);
+
+					// Second triangle (top-left, bottom-right, bottom-left)
+					cells[i + 3].position = sf::Vector2f(x, y);
+					cells[i + 4].position = sf::Vector2f(x + gols.cellDist, y + gols.cellDist);
+					cells[i + 5].position = sf::Vector2f(x, y + gols.cellDist);
+
+					for (int j = 0; j < 6; ++j) {
+						cells[i + j].color = color;
+					}
+
+					i += 6; // Move to the next set of vertices
+
+				}
+			}
+		}
+	}
+
+	void initFont() {
+		font.loadFromFile(".\\Montserrat-Regular.ttf");
+		frameText.setCharacterSize(24);
+		frameText.setFillColor(Color::WHITE);
+		frameText.setFont(font);
+	}
+
 	void setupVertexBuffer(sf::VertexBuffer& vertexBuffer, const int& xPos, const int& yPos, const int& width, const int& height, const sf::Color& color) {
 
 		sf::Vertex vertices[6];
@@ -307,59 +376,112 @@ public:
 
 	}
 
-
-	void frameCounterDisplay(const int& frameTime, const int& avg) {
-		frameText.setString("F Time (us): " + itostr(frameTime) + "\nAvg FPS: " + itostr(avg)); // Maybe do with c style strings?
-
-		window.draw(frameText);
+	inline void renderWorld() {
+		window.draw(borderAndBGRect);
 	}
 
-	void mainLoop() {
+	void renderVertices() {
 
-		float frameTime = 0;
-		float totalFrameTime = 0;
-		int frameCount = 0;
+		if constexpr (gols.cellDist == 1) {
 
-		const float& delay = 1.0f / gols.stepsPerSec;
+			int i = 0;
+
+			for (int row = 0; row < gols.rows; ++row) {
+				for (int col = 0; col < gols.cols; ++col) {
+
+					sf::Color color = grid.getCellTypeAt(row, col).color;
+
+					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
+						color = Color::CYAN; // Highlight color
+					}
 
 
-		while (running) {
-
-			frameTime = clock.restart().asMicroseconds();
-			totalFrameTime += frameTime;
-			timer += frameTime / 1000000.0f;
-
-			handleEvents();
-			if (timer >= delay) {
-				if (!paused) {
-					update();
+					cells[i].color = color;
+					++i;
 				}
-				timer -= delay;
 			}
-			renderAll();
-			frameCounterDisplay(frameTime, frameCount / (totalFrameTime / 1000000));
-			frameCount++;
-			window.display();
 
+			window.draw(cells);
 		}
+		else {
+			int i = 0;
+			for (int row = 0; row < gols.rows; ++row) {
+				for (int col = 0; col < gols.cols; ++col) {
 
-		cells.clear();
+					sf::Color color = grid.getCellTypeAt(row, col).color;
+
+					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
+						color = Color::CYAN; // Highlight color
+					}
+
+					// Set the color of the vertices
+					for (int j = 0; j < 6; ++j) {
+						cells[i + j].color = color; // Change this to the desired color
+					}
+
+					i += 6; // Move to the next set of vertices
+
+				}
+			}
+			window.draw(cells);
+		}
+	}
+
+};
+
+class World {
+public:
+
+	World() : window(nullptr), clock(nullptr), renderer(nullptr) {
+
+		renderer = new Renderer(grid);
+		window = &(renderer->window);
+		clock = &(renderer->clock);
 
 	}
 
+		void mainLoop() {
+
+			float frameTime = 0;
+			float totalFrameTime = 0;
+			int frameCount = 0;
+
+			const float& delay = 1.0f / gols.stepsPerSec;
+
+
+			while (running) {
+
+				frameTime = clock->restart().asMicroseconds();
+				totalFrameTime += frameTime;
+				timer += frameTime / 1000000.0f;
+
+				handleEvents();
+				if (timer >= delay) {
+					if (!paused) {
+						update();
+					}
+					timer -= delay;
+				}
+				renderer->renderAll();
+				renderer->frameCounterDisplay(frameTime, frameCount / (totalFrameTime / 1000000));
+				frameCount++;
+				window->display();
+
+			}
+
+			renderer->clearCells(); // Clear the cells vertex array, is this nec?
+
+		
+	}
 
 private:
 
-	sf::RenderWindow window;
-	sf::Clock clock;
-	sf::Font font;
-	sf::Text frameText;
-
-	sf::VertexBuffer borderAndBGRect;
-	sf::VertexArray cells; // Maybe make me a buffer?
-
-	// GameOfLife game;
+	sf::RenderWindow* window;
+	sf::Clock* clock;
 	Grid grid;
+
+	Renderer* renderer;
+
 
 	bool running = true;
 	bool paused = true; // Start paused
@@ -369,25 +491,19 @@ private:
 	sf::Vector2i firstPos;
 	sf::Vector2i secondPos;
 
-	void initFont() {
-		font.loadFromFile(".\\Montserrat-Regular.ttf");
-		frameText.setCharacterSize(24);
-		frameText.setFillColor(Color::WHITE);
-		frameText.setFont(font);
-	}
-
+	
 
 	void handleEvents() {
 		sf::Event event;
 
-		while (window.pollEvent(event)) {
+		while (window->pollEvent(event)) {
 			switch (event.type) {
 			case sf::Event::Closed:
-				window.close();
+				window->close();
 				running = false;
 				break;
 			case sf::Event::MouseButtonPressed: {
-				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+				sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
 				const int& col = mousePos.x / gols.cellDist;
 				const int& row = mousePos.y / gols.cellDist;
 				firstPos = sf::Vector2i(row, col);
@@ -395,7 +511,7 @@ private:
 				break;
 			}
 			case sf::Event::MouseButtonReleased: {
-				sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+				sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
 				const int& col = mousePos.x / gols.cellDist;
 				const int& row = mousePos.y / gols.cellDist;
 
@@ -444,7 +560,7 @@ private:
 	}
 
 	void handleMouseHover() {
-		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+		sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
 		const int mouseCol = mousePos.x / gols.cellDist;
 		const int mouseRow = mousePos.y / gols.cellDist;
 
@@ -540,116 +656,7 @@ private:
 	}
 
 
-	inline void renderWorld() {
-		window.draw(borderAndBGRect);
-	}
-
-	void calcVertices() { // Used once to place all of the vertices
-		if constexpr (gols.cellDist == 1) {
-			int i = 0;
-			for (int row = 0; row < gols.rows; ++row) {
-				for (int col = 0; col < gols.cols; ++col) {
-					const int& x = col * (gols.cellDist) + gols.borderSize;
-					const int& y = row * (gols.cellDist) + gols.borderSize;
-
-					const sf::Color& color = grid.getCellTypeAt(row, col).color;
-
-					cells[i].position = sf::Vector2f(x, y);
-					cells[i].color = color;
-					++i;
-				}
-			}
-		}
-		else {
-			int i = 0;
-			for (int row = 0; row < gols.rows; ++row) {
-				for (int col = 0; col < gols.cols; ++col) {
-					// Position of upper left corner of cell
-					const int& x = col * (gols.cellDist) + gols.borderSize;
-					const int& y = row * (gols.cellDist) + gols.borderSize;
-
-					const sf::Vector2i& pos = sf::Mouse::getPosition(window);
-
-					const sf::Color& color = grid.getCellTypeAt(row, col).color;
-
-
-					// First triangle (top-left, top-right, bottom-right)
-					cells[i].position = sf::Vector2f(x, y);
-					cells[i + 1].position = sf::Vector2f(x + gols.cellDist, y);
-					cells[i + 2].position = sf::Vector2f(x + gols.cellDist, y + gols.cellDist);
-
-					// Second triangle (top-left, bottom-right, bottom-left)
-					cells[i + 3].position = sf::Vector2f(x, y);
-					cells[i + 4].position = sf::Vector2f(x + gols.cellDist, y + gols.cellDist);
-					cells[i + 5].position = sf::Vector2f(x, y + gols.cellDist);
-
-					for (int j = 0; j < 6; ++j) {
-						cells[i + j].color = color; 
-					}
-
-					i += 6; // Move to the next set of vertices
-
-				}
-			}
-		}
-	}
-
-	void vertexRenderGrid() { // Used to update colors, doesn't really do anything else
-
-		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		const int& mouseCol = mousePos.x / gols.cellDist;
-		const int& mouseRow = mousePos.y / gols.cellDist;
-
-		if constexpr (gols.cellDist == 1) {
-
-			int i = 0;
-
-			for (int row = 0; row < gols.rows; ++row) {
-				for (int col = 0; col < gols.cols; ++col) {
-
-					sf::Color color = grid.getCellTypeAt(row, col).color;
-
-					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
-						color = Color::CYAN; // Highlight color
-					}
-
-
-					cells[i].color = color;
-					++i;
-				}
-			}
-
-			window.draw(cells);
-		}
-		else {
-			int i = 0;
-			for (int row = 0; row < gols.rows; ++row) {
-				for (int col = 0; col < gols.cols; ++col) {
-
-					sf::Color color = grid.getCellTypeAt(row, col).color;
-
-					if (grid.isCellHighlighted(sf::Vector2i(row, col))) {
-						color = Color::CYAN; // Highlight color
-					}
-
-					// Set the color of the vertices
-					for (int j = 0; j < 6; ++j) {
-						cells[i + j].color = color; // Change this to the desired color
-					}
-
-					i += 6; // Move to the next set of vertices
-
-				}
-			}
-			window.draw(cells);
-		}
-	}
-
-
-	inline void renderAll() {
-		renderWorld();
-		vertexRenderGrid();
-	}
+	
 
 };
 
@@ -662,3 +669,23 @@ int main() {
 
 	return 0;
 }
+
+// Sandy Rendering
+// 
+// GOALS
+// 
+// Split into multiple files (split up world into eventhandler, world, and renderer first)
+// Add GUI for tools and types
+// 
+// Address potential future bottlenecks
+// --> Make the cells vertex array a vertex buffer
+// --> The current implementation redraws the entire grid every frame, which can be optimized by only updating the vertices of cells that changed state.
+// --> Make grid store cells linearly (only one vector) (way later, figure out cell update stuff first)
+// 
+// Clean up/ refactor code to make more modular/extendable --> Move on from this for now except for items below
+// --> Break into more smaller classes (maybe?) --> e.g. event handling separately?
+// --> Add error checking/ reporting
+// 
+// Add gui stuff: debug info, tool selection, etc...
+//
+// Look for memory leaks
