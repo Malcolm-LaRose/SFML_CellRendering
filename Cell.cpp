@@ -1,7 +1,4 @@
 #include "Cell.h"
-#include <SFML/Graphics.hpp>
-
-#include "Color.h"
 
 // CellBehavior implementation
 CellBehavior::CellBehavior(bool p) : permeable(p) {}
