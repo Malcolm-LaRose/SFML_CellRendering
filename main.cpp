@@ -16,7 +16,7 @@
 
 GoL_Settings& gols = GoL_Settings::getSettings();
 
-// Define hash function for sf::Vector2i --> I don't understand how this works
+// Define hash function for sf::Vector2i
 namespace std {
 	template<> struct hash<sf::Vector2i> {
 		size_t operator()(const sf::Vector2i& vec) const {
@@ -226,8 +226,7 @@ class TypeSelection {
 
 };
 
-
-class EventHandler {};
+class World;
 
 class Renderer {
 public:
@@ -264,10 +263,6 @@ public:
 	inline void renderAll() {
 	renderWorld();
 	renderVertices();
-	}
-
-	inline sf::RenderWindow& getWindowRef() {
-		return window;
 	}
 
 	inline void clearCells() {
@@ -401,7 +396,7 @@ private:
 				}
 			}
 
-			window.draw(cells);
+			window.draw(cells); // Maybe move to render world function
 		}
 		else {
 			int i = 0;
@@ -429,69 +424,11 @@ private:
 
 };
 
-class World {
+class EventHandler {
 public:
-
-	World() : window(nullptr), clock(nullptr), renderer(nullptr) {
-
-		renderer = new Renderer(grid);
+	EventHandler(Grid& grid, Renderer* rend, World& world) : grid(grid), renderer(rend), world(world) {
 		window = &(renderer->window);
-		clock = &(renderer->clock);
-
 	}
-
-		void mainLoop() {
-
-			float frameTime = 0;
-			float totalFrameTime = 0;
-			int frameCount = 0;
-
-			const float& delay = 1.0f / gols.stepsPerSec;
-
-
-			while (running) {
-
-				frameTime = clock->restart().asMicroseconds();
-				totalFrameTime += frameTime;
-				timer += frameTime / 1000000.0f;
-
-				handleEvents();
-				if (timer >= delay) {
-					if (!paused) {
-						update();
-					}
-					timer -= delay;
-				}
-				renderer->renderAll();
-				renderer->frameCounterDisplay(frameTime, frameCount / (totalFrameTime / 1000000));
-				frameCount++;
-				window->display();
-
-			}
-
-			renderer->clearCells(); // Clear the cells vertex array, is this nec?
-
-		
-	}
-
-private:
-
-	sf::RenderWindow* window;
-	sf::Clock* clock;
-	Grid grid;
-
-	Renderer* renderer;
-
-
-	bool running = true;
-	bool paused = true; // Start paused
-	float timer = 0; // For simtime calcs
-
-	sf::Mouse mouse; // Could this be used?
-	sf::Vector2i firstPos;
-	sf::Vector2i secondPos;
-
-	
 
 	void handleEvents() {
 		sf::Event event;
@@ -517,7 +454,7 @@ private:
 
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					grid.clearHighlightedCells();
-					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y); 
+					bresenhamTool(firstPos.x, firstPos.y, secondPos.x, secondPos.y);
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
 					grid.clearHighlightedCells();
@@ -529,7 +466,7 @@ private:
 				handleMouseHover();
 
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-					bresenhamLineHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y); 
+					bresenhamLineHighlighter(firstPos.x, firstPos.y, secondPos.x, secondPos.y);
 				}
 
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
@@ -540,7 +477,7 @@ private:
 			}
 			case sf::Event::KeyPressed:
 				if (event.key.code == sf::Keyboard::Space) { // Single step
-					update();
+					world.update(); // Need to tell World this (function pointer?)
 				}
 				if (event.key.code == sf::Keyboard::P) { // Pause/unpause continuous stepping
 					paused = !paused;
@@ -558,6 +495,23 @@ private:
 			}
 		}
 	}
+
+	bool running;
+	bool paused = true; // Start paused
+	float timer = 0.0f; // For simtime calcs
+
+private:
+
+	sf::Mouse mouse; // Could this be used?
+	sf::Vector2i firstPos;
+	sf::Vector2i secondPos;
+
+	Grid& grid;
+	World& world;
+	Renderer* renderer;
+	sf::RenderWindow* window;
+
+
 
 	void handleMouseHover() {
 		sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
@@ -582,7 +536,7 @@ private:
 		int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
 		int err = dx + dy, e2; /* error value e_xy */
 
-		while (true) { 
+		while (true) {
 			grid.updateCellTypeAt(x0, y0, CellType::STONE);
 			if (x0 == x1 && y0 == y1) break;
 			e2 = 2 * err;
@@ -650,10 +604,71 @@ private:
 		} while (x < 0);
 	}
 
+};
+
+class World {
+public:
+
+	World() : window(nullptr), clock(nullptr), renderer(nullptr) {
+
+		renderer = new Renderer(grid);
+		window = &(renderer->window);
+		clock = &(renderer->clock);
+		eventHandler = new EventHandler(grid, renderer, *this);
+
+	}
+
+		void mainLoop() {
+
+			float frameTime = 0;
+			float totalFrameTime = 0;
+			int frameCount = 0;
+
+			const float& delay = 1.0f / gols.stepsPerSec;
+
+
+			while ((eventHandler->running)) {
+
+				frameTime = clock->restart().asMicroseconds();
+				totalFrameTime += frameTime;
+				eventHandler->timer += frameTime / 1000000.0f;
+
+				eventHandler->handleEvents();
+				if ((eventHandler->timer) >= delay) {
+					if (!(eventHandler->paused)) {
+						update();
+					}
+					(eventHandler->timer) -= delay;
+				}
+				renderer->renderAll();
+				renderer->frameCounterDisplay(frameTime, frameCount / (totalFrameTime / 1000000));
+				frameCount++;
+				window->display();
+
+			}
+
+			renderer->clearCells(); // Clear the cells vertex array, is this nec?
+
+		
+	}
+
 
 	inline void update() {
 		// Call update for each cell here, update behavior to be determined by celltype
 	}
+
+private:
+
+	Renderer* renderer;
+	sf::RenderWindow* window;
+	sf::Clock* clock;
+
+	EventHandler* eventHandler;
+
+	Grid grid;
+
+
+	// bool running = true;
 
 
 	
