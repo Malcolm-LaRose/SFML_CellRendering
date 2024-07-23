@@ -14,6 +14,12 @@
 #include <vector>
 #include <unordered_set>
 
+#include "Cell.h"
+#include "Grid.h"
+#include "Renderer.h"
+#include "EventHandler.h"
+#include "World.h"
+
 GoL_Settings& gols = GoL_Settings::getSettings();
 
 // Define hash function for sf::Vector2i
@@ -26,123 +32,10 @@ namespace std {
 	};
 }
 
-
-class CellBehavior {
-public:
-	virtual void update() = 0;
-	virtual ~CellBehavior() {} // Ensure virtual destructor for polymorphic behavior
-
-	bool permeable;
-
-protected:
-	CellBehavior(bool p) : permeable(p) {}
-};
-
-class AirBehavior : public CellBehavior {
-public:
-	static AirBehavior& instance() {
-		static AirBehavior instance;
-		return instance;
-	}
-
-	void update() override {
-		// Air cells do nothing
-	}
-
-private:
-	AirBehavior() : CellBehavior(true) {} // Air is permeable
-};
-
-class StoneBehavior : public CellBehavior {
-public:
-	static StoneBehavior& instance() {
-		static StoneBehavior instance;
-		return instance;
-	}
-
-	void update() override {
-		// Stone cells do nothing but other blocks cant pass through them... 
-	}
-
-private:
-	StoneBehavior() : CellBehavior(false) {} // Stone is not permeable
-};
-
-class SandBehavior : public CellBehavior {
-public: 
-	static SandBehavior& instance() {
-		static SandBehavior instance;
-		return instance;
-	}
-
-	void update() override {
-		// Sand falls straight down (need to figure out piling)
-	}
-
-private:
-	SandBehavior() : CellBehavior(true) {} // Sand is permeable
-};
-
-struct CellType { // Binds type to color, can extend later to more things like behaviour
-
-	enum Type {
-		AIR, // New default should be air
-		STONE, // Can be stone instead
-
-		_CELLTYPES // Special member to count the number of cell types
-	} type;
-	sf::Color color;
-	CellBehavior* behavior; // FUNCTION pointer I think
-
-	CellType(Type t) : type(t) {
-
-		switch (type) {
-		case AIR:
-			color = Color::AIR;
-			behavior = &AirBehavior::instance();
-			break;
-		case STONE:
-			color = Color::STONE;
-			behavior = &StoneBehavior::instance();
-			break;
-		default: // Error type
-			color = Color::PHSORNG;
-			behavior = nullptr;
-			break;
-		}
-	}
-
-	void update() const {
-		if (behavior != nullptr) {
-			behavior->update();
-		}
-	}
-
-
-};
-
 const CellType& getRandCellType() {
 	const int randInt = genRandomInt(0, CellType::_CELLTYPES - 1);
-	return CellType::Type(randInt); 
+	return CellType::Type(randInt);
 }
-
-
-class Cell {
-public:
-	Cell() : type(CellType::AIR) {}
-
-	void changeCellType(const CellType& ty) {
-		type = ty;
-	}
-
-	const CellType& getCellType() const {
-		return type;
-	}
-
-private:
-	CellType type; 
-
-};
 
 class Grid {
 public:
