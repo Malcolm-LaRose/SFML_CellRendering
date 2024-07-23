@@ -30,12 +30,12 @@ Renderer::Renderer(Grid& grid) : grid(grid) {
     frameText.setPosition(gols.borderSize, gols.borderSize);
 }
 
-inline void Renderer::renderAll() {
+void Renderer::renderAll() {
     renderWorld();
     renderVertices();
 }
 
-inline void Renderer::clearCells() {
+void Renderer::clearCells() {
     cells.clear();
 }
 

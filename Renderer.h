@@ -12,8 +12,8 @@ class Renderer {
 public:
     Renderer(Grid& grid);
 
-    inline void renderAll();
-    inline void clearCells();
+    void renderAll();
+    void clearCells();
     void frameCounterDisplay(const int& frameTime, const int& avg);
 
     sf::RenderWindow window;
@@ -31,7 +31,7 @@ private:
     void calcVertices();
     void initFont();
     void setupVertexBuffer(sf::VertexBuffer& vertexBuffer, const int& xPos, const int& yPos, const int& width, const int& height, const sf::Color& color);
-    inline void renderWorld();
+    void renderWorld();
     void renderVertices();
 
     GoL_Settings& gols = GoL_Settings::getSettings();

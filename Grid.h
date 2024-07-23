@@ -19,10 +19,10 @@ public:
     void updateCellTypeAt(const int& row, const int& col, const CellType& ty);
     void resetGrid();
     void randomizeGrid();
-    inline void incIterNum();
+    void incIterNum();
     void addHighlightedCell(const sf::Vector2i& cell);
     const bool isCellHighlighted(const sf::Vector2i& cell) const;
-    inline void clearHighlightedCells();
+    void clearHighlightedCells();
     const std::unordered_set<sf::Vector2i>& getHighlightedCells() const;
 
 private:

@@ -38,7 +38,7 @@ void Grid::randomizeGrid() {
     iterNum = 0;
 }
 
-inline void Grid::incIterNum() {
+void Grid::incIterNum() {
     ++iterNum;
 }
 
@@ -50,7 +50,7 @@ const bool Grid::isCellHighlighted(const sf::Vector2i& cell) const {
     return highlightedCells.find(cell) != highlightedCells.end();
 }
 
-inline void Grid::clearHighlightedCells() {
+void Grid::clearHighlightedCells() {
     highlightedCells.clear();
 }
 
