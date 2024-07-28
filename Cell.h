@@ -24,35 +24,7 @@ protected:
     CellBehavior(State st);
 };
 
-class AirBehavior : public CellBehavior {
-public:
-    static AirBehavior& instance();
 
-    void update() override; // Air does nothing but is permeable
-
-private:
-    AirBehavior();
-};
-
-class StoneBehavior : public CellBehavior {
-public:
-    static StoneBehavior& instance();
-
-    void update() override; // Stone does nothing but is impermeable
-
-private:
-    StoneBehavior();
-};
-
-class SandBehavior : public CellBehavior {
-public:
-    static SandBehavior& instance();
-
-    void update() override;
-
-private:
-    SandBehavior();
-};
 
 struct CellType {
     enum Type {
@@ -63,11 +35,8 @@ struct CellType {
     } type;
 
     sf::Color color;
-    CellBehavior* behavior;
 
     CellType(Type t);
-
-    void update() const;
 };
 
 class Cell {
