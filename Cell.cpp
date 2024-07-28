@@ -37,6 +37,16 @@ SandBehavior& SandBehavior::instance() {
 
 void SandBehavior::update() {
     // Sand falls straight down (need to figure out piling)
+
+    // If space below is empty, move down and return
+
+    // If space empty both down and left and right, pick at random
+
+    // If space empty down and left move down and left
+
+    // If space empty down and right move down and right
+
+
 }
 
 SandBehavior::SandBehavior() : CellBehavior(SOLID) {}

@@ -28,7 +28,7 @@ class AirBehavior : public CellBehavior {
 public:
     static AirBehavior& instance();
 
-    void update() override; // Air does nothing
+    void update() override; // Air does nothing and is impermeable
 
 private:
     AirBehavior();
@@ -38,7 +38,7 @@ class StoneBehavior : public CellBehavior {
 public:
     static StoneBehavior& instance();
 
-    void update() override; 
+    void update() override; // Stone does nothing but is impermeable
 
 private:
     StoneBehavior();
@@ -48,7 +48,7 @@ class SandBehavior : public CellBehavior {
 public:
     static SandBehavior& instance();
 
-    void update() override;
+    void update() override; 
 
 private:
     SandBehavior();

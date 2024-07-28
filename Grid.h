@@ -25,6 +25,8 @@ public:
     void clearHighlightedCells();
     const std::unordered_set<sf::Vector2i>& getHighlightedCells() const;
 
+    void updateGrid();
+
 private:
     std::vector<std::vector<Cell>> grid; // Can be 1d vector instead
     std::unordered_set<sf::Vector2i> highlightedCells;

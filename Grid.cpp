@@ -58,6 +58,11 @@ const std::unordered_set<sf::Vector2i>& Grid::getHighlightedCells() const {
     return highlightedCells;
 }
 
+void updateGrid() {
+    // For each cell, call it's update function 
+}
+
+
 const CellType& Grid::getRandCellType() {
     const int randInt = genRandomInt(0, CellType::_CELLTYPES - 1);
     return CellType::Type(randInt);
