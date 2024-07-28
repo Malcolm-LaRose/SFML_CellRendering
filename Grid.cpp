@@ -58,7 +58,7 @@ const std::unordered_set<sf::Vector2i>& Grid::getHighlightedCells() const {
     return highlightedCells;
 }
 
-void updateGrid() {
+void Grid::updateGrid() {
     // For each cell, call it's update function 
 }
 
