@@ -18,7 +18,7 @@ public:
 
     void handleEvents();
 
-    bool running;
+    bool running = true;
     bool paused = true; // Start paused
     float timer = 0.0f; // For simtime calculations
 
