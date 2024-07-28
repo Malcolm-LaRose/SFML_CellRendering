@@ -7,7 +7,7 @@ CellBehavior::~CellBehavior() {}
 
 // AirBehavior implementation
 AirBehavior& AirBehavior::instance() {
-    static AirBehavior instance;
+    AirBehavior instance;
     return instance;
 }
 
@@ -36,9 +36,14 @@ SandBehavior& SandBehavior::instance() {
 }
 
 void SandBehavior::update() {
-    // Sand falls straight down (need to figure out piling)
+    // Called on a cell... 
+
+
+    // Get current row/col --> how?
+
 
     // If space below is empty, move down and return
+    
 
     // If space empty both down and left and right, pick at random
 

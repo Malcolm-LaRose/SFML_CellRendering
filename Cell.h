@@ -28,7 +28,7 @@ class AirBehavior : public CellBehavior {
 public:
     static AirBehavior& instance();
 
-    void update() override; // Air does nothing and is impermeable
+    void update() override; // Air does nothing but is permeable
 
 private:
     AirBehavior();
@@ -48,7 +48,7 @@ class SandBehavior : public CellBehavior {
 public:
     static SandBehavior& instance();
 
-    void update() override; 
+    void update() override;
 
 private:
     SandBehavior();

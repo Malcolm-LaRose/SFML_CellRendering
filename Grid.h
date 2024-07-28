@@ -32,6 +32,9 @@ private:
     std::unordered_set<sf::Vector2i> highlightedCells;
     uint32_t iterNum = 0;
 
+    // Store updated particles so we only draw updated particles (performance)
+
+
     GoL_Settings& gols = GoL_Settings::getSettings();
 
     const CellType& getRandCellType(); // Assuming this function is defined somewhere
