@@ -1,7 +1,7 @@
 #include "Cell.h"
 
 // CellBehavior implementation
-CellBehavior::CellBehavior(bool p) : permeable(p) {}
+CellBehavior::CellBehavior(State st) : state(st) {}
 
 CellBehavior::~CellBehavior() {}
 
@@ -15,7 +15,7 @@ void AirBehavior::update() {
     // Air cells do nothing
 }
 
-AirBehavior::AirBehavior() : CellBehavior(true) {}
+AirBehavior::AirBehavior() : CellBehavior(GAS) {}
 
 // StoneBehavior implementation
 StoneBehavior& StoneBehavior::instance() {
@@ -27,7 +27,7 @@ void StoneBehavior::update() {
     // Stone cells do nothing but other blocks can't pass through them
 }
 
-StoneBehavior::StoneBehavior() : CellBehavior(false) {}
+StoneBehavior::StoneBehavior() : CellBehavior(SOLID) {}
 
 // SandBehavior implementation
 SandBehavior& SandBehavior::instance() {
@@ -39,7 +39,7 @@ void SandBehavior::update() {
     // Sand falls straight down (need to figure out piling)
 }
 
-SandBehavior::SandBehavior() : CellBehavior(true) {}
+SandBehavior::SandBehavior() : CellBehavior(SOLID) {}
 
 // CellType implementation
 CellType::CellType(Type t) : type(t) {

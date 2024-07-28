@@ -13,17 +13,22 @@ public:
     virtual void update() = 0;
     virtual ~CellBehavior(); // Ensure virtual destructor for polymorphic behavior
 
-    bool permeable;
+    enum State {
+        SOLID, // Nothing passes through solids
+        LIQUID, // Liquids flow
+        GAS // Gasses do nothing
+        
+    } state;
 
 protected:
-    CellBehavior(bool p);
+    CellBehavior(State st);
 };
 
 class AirBehavior : public CellBehavior {
 public:
     static AirBehavior& instance();
 
-    void update() override;
+    void update() override; // Air does nothing
 
 private:
     AirBehavior();
@@ -33,7 +38,7 @@ class StoneBehavior : public CellBehavior {
 public:
     static StoneBehavior& instance();
 
-    void update() override;
+    void update() override; 
 
 private:
     StoneBehavior();
