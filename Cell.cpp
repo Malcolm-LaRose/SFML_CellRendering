@@ -10,6 +10,9 @@ CellType::CellType(Type t) : type(t) {
     case STONE:
         color = Color::STONE;
         break;
+    case SAND:
+        color = Color::SAND;
+        break;
     default: // Error type
         color = Color::PHSORNG;
         break;

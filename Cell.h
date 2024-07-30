@@ -14,6 +14,7 @@ struct CellType { // Cell type should determine color and behavior...
     enum Type {
         AIR,
         STONE,
+        SAND,
 
         _CELLTYPES // Special member to count the number of cell types
     } type;
