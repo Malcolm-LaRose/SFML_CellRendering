@@ -1,9 +1,5 @@
 #include "Cell.h"
 
-// CellBehavior implementation
-CellBehavior::CellBehavior(State st) : state(st) {}
-
-CellBehavior::~CellBehavior() {}
 
 // CellType implementation
 CellType::CellType(Type t) : type(t) {

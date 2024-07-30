@@ -8,25 +8,9 @@
 
 
 
-class CellBehavior {
-public:
-    virtual void update() = 0;
-    virtual ~CellBehavior(); // Ensure virtual destructor for polymorphic behavior
-
-    enum State {
-        SOLID, // Nothing passes through solids
-        LIQUID, // Liquids flow
-        GAS // Gasses do nothing
-        
-    } state;
-
-protected:
-    CellBehavior(State st);
-};
 
 
-
-struct CellType {
+struct CellType { // Cell type should determine color and behavior...
     enum Type {
         AIR,
         STONE,
@@ -39,7 +23,7 @@ struct CellType {
     CellType(Type t);
 };
 
-class Cell {
+class Cell { // Maybe make me an abstract class?
 public:
     Cell();
 
