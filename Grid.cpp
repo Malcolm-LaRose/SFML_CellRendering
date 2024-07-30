@@ -65,7 +65,7 @@ void Grid::updateGrid() {
 
     for (int row = 0; row < gols.rows; row++) {
         for (int col = 0; col < gols.cols; col++) {
-            grid[row][col];
+            grid[row][col].update();
         }
     }
 

@@ -31,6 +31,9 @@ public:
     void changeCellType(const CellType& ty);
     const CellType& getCellType() const;
 
+    // Would be good to switch over celltype here and update accordingly, rather than switch every call of update
+    void update() {}
+
 private:
     CellType type;
 };

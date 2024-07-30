@@ -38,4 +38,5 @@ void World::mainLoop() {
 
 inline void World::update() {
     // Call update for each cell here, update behavior to be determined by celltype
+    grid.updateGrid(); // 
 }

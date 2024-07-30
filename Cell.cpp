@@ -31,3 +31,7 @@ void Cell::changeCellType(const CellType& ty) {
 const CellType& Cell::getCellType() const {
     return type;
 }
+
+void Cell::update() {
+    
+}
