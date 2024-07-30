@@ -7,9 +7,6 @@
 #include "Color.h"
 
 
-
-
-
 struct CellType { // Cell type should determine color and behavior...
     enum Type {
         AIR,
@@ -32,7 +29,7 @@ public:
     const CellType& getCellType() const;
 
     // Would be good to switch over celltype here and update accordingly, rather than switch every call of update
-    void update() {}
+    void update() {} // Update could be a function pointer whose address to the correct update behavior is determined in cell type implementation
 
 private:
     CellType type;
