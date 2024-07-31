@@ -59,7 +59,7 @@ const std::unordered_set<sf::Vector2i>& Grid::getHighlightedCells() const {
 }
 
 void Grid::updateGrid() {
-    // For each cell, call it's update function 
+    // For each cell, call it's update function ... but first set up updating here and figure out how to abstract later
     Grid updatedGrid;
     bool gridUpdated = false;
 
