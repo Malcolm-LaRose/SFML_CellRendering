@@ -89,7 +89,7 @@ void EventHandler::bresenhamTool(int x0, int y0, int x1, int y1) {
     int err = dx + dy, e2; /* error value e_xy */
 
     while (true) {
-        grid.updateCellTypeAt(x0, y0, CellType::STONE);
+        grid.updateCellTypeAt(x0, y0, CellType::SAND);
         if (x0 == x1 && y0 == y1) break;
         e2 = 2 * err;
         if (e2 >= dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
@@ -121,10 +121,10 @@ void EventHandler::plotCircle(const sf::Vector2i& pos1, const sf::Vector2i& pos2
 
     int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
     do {
-        grid.updateCellTypeAt(xm - x, ym + y, CellType::STONE); /*   I. Quadrant */
-        grid.updateCellTypeAt(xm - y, ym - x, CellType::STONE); /*  II. Quadrant */
-        grid.updateCellTypeAt(xm + x, ym - y, CellType::STONE); /* III. Quadrant */
-        grid.updateCellTypeAt(xm + y, ym + x, CellType::STONE); /*  IV. Quadrant */
+        grid.updateCellTypeAt(xm - x, ym + y, CellType::SAND); /*   I. Quadrant */
+        grid.updateCellTypeAt(xm - y, ym - x, CellType::SAND); /*  II. Quadrant */
+        grid.updateCellTypeAt(xm + x, ym - y, CellType::SAND); /* III. Quadrant */
+        grid.updateCellTypeAt(xm + y, ym + x, CellType::SAND); /*  IV. Quadrant */
         r = err;
         if (r <= y) err += ++y * 2 + 1;           /* e_xy+e_y < 0 */
         if (r > x || err > y) err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */

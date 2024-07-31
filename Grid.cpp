@@ -65,7 +65,17 @@ void Grid::updateGrid() {
 
     for (int row = 0; row < gols.rows; row++) {
         for (int col = 0; col < gols.cols; col++) {
-            grid[row][col].update();
+            if (grid[row][col].getCellType().type == CellType::SAND) {
+                updatedGrid.updateCellTypeAt(row + 1, col, CellType::SAND);   
+            }
+        }
+    }
+    
+
+    for (int row = 0; row < gols.rows; ++row) {
+        for (int col = 0; col < gols.cols; ++col) {
+            const CellType& ty = updatedGrid.getCellTypeAt(row, col);
+            this->updateCellTypeAt(row, col, ty);
         }
     }
 
